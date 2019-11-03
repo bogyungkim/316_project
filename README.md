@@ -5,3 +5,8 @@
 ```$xslt
 npm install
 ```
+
+## How to run
+```$xslt
+npm start
+```
