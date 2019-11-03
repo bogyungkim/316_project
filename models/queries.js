@@ -1,11 +1,4 @@
-const Pool = require('pg').Pool;
-const pool = new Pool({
-  user: 'me',
-  host: 'localhost',
-  database: 'api',
-  password: 'password',
-  port: 5432,
-});
+import {pool} from 'pg'
 
 const getUsers = (request, response) => {
   pool.query('SELECT * FROM users', (error, results) => {
