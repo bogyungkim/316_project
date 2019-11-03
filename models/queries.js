@@ -9,6 +9,7 @@ const pool = new Pool({
 });
 
 const getUsers = (request, response) => {
+  // response.send("hello")
   pool.query('SELECT * FROM users', (error, results) => {
     if (error) {
       response.status(400).json(error);
