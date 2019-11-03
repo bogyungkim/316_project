@@ -26,6 +26,5 @@ app.post('/', (req, res) => {
 
 app.get('/users', db.getUsers);
 app.post('/users', db.createUser);
-app.put('/users/:id', db.updateUser)
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
