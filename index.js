@@ -1,26 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors'
-import {Client} from 'pg';
 import bodyParser from 'body-parser';
 import db from './models/queries';
-
-const client = new Client({
-  user: 'me',
-  host: 'localhost',
-  database: 'api',
-  password: process.env.PASSWORD,
-  port: process.env.API_PORT,
-  connectionString: `postgres://postgres@localhost:${process.env.API_PORT}/api`
-})
-
-client.connect(err => {
-  if (err) {
-    console.error('connection error', err.stack)
-  } else {
-    console.log('connected')
-  }
-})
 
 const app = express();
 
