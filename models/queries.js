@@ -1,4 +1,12 @@
-import {pool} from 'pg'
+import {Pool} from 'pg'
+
+const pool = new Pool({
+  user: 'me',
+  host: 'localhost',
+  database: 'api',
+  password: process.env.PASSWORD,
+  port: process.env.API_PORT,
+});
 
 const getUsers = (request, response) => {
   pool.query('SELECT * FROM users', (error, results) => {

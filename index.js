@@ -1,29 +1,26 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors'
-import {Pool, Client} from 'pg';
+import {Client} from 'pg';
 import bodyParser from 'body-parser';
 import db from './models/queries';
 
-const pool = new Pool({
+const client = new Client({
   user: 'me',
   host: 'localhost',
   database: 'api',
   password: process.env.PASSWORD,
   port: process.env.API_PORT,
-});
+  connectionString: `postgres://postgres@localhost:${process.env.API_PORT}/api`
+})
 
-const connectionString = async () => {
-  return await `postgres://postgres@localhost:${process.env.API_PORT}/api`;
-}
-
-const client = async () => {
-  return await new Client({
-    connectionString: connectionString
-  });
-}
-
-client.connect();
+client.connect(err => {
+  if (err) {
+    console.error('connection error', err.stack)
+  } else {
+    console.log('connected')
+  }
+})
 
 const app = express();
 
@@ -39,7 +36,7 @@ app.use(
 app.use(cors());
 
 app.get('/', (req, res) => {
-  return res.send('Received a GwET HTTP method');
+  return res.send('Received a GET HTTP method');
 });
 app.post('/', (req, res) => {
   return res.send('Received a POST HTTP method');
