@@ -1,4 +1,4 @@
 # exclude files
 /node_modules
 /.idea
-.DS_store
+.DS_Store
