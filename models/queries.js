@@ -21,7 +21,7 @@ const createUser = (request, response) => {
 
   pool.query('', (error, result) => {
     'INSERT INTO users (uid, phoneNumber, password, level, netid, deletedAt) VALUES' +
-        '($2, $'9195648686', $'123123', $1, $'yk154', $NULL), [uid, phoneNumber, password, level, netid, deletedAt]'
+        '(2, \$\'9195648686\', \$\'123123\', \$1, \$\'yk154\', \$NULL), [uid, phoneNumber, password, level, netid, deletedAt]'
     if (error) {
       response.status(400).send(`Error detected ${error}`);
     }
