@@ -24,7 +24,9 @@ app.post('/', (req, res) => {
   return res.send('Received a POST HTTP method');
 });
 
-app.get('/users', db.getUsers);
-app.post('/users', db.createUser);
+app.get('/users/get', db.getUsers);
+// app.post('/users/create', db.createUser);
+app.post('/users/create', db.createUser);
+app.post('/users/createTable', db.createTable);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
