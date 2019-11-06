@@ -11,7 +11,7 @@ import {Pool} from 'pg'
 const pool = new Pool({
   user: process.env.RDS_USER,
   host: process.env.RDS_ENDPOINT,
-  database: 'postgres',
+  database: process.env.DATABASE,
   password: process.env.RDS_PASSWORD,
   port: process.env.RDS_PORT,
 });
