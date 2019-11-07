@@ -1,10 +1,18 @@
 BACKEND TEAM
 ## How to install
-```$xslt
+
+```
 npm install
 ```
 
 ## How to run
-```$xslt
+
+```
 npm start
+```
+
+## sql file to create tables & insert dummy values
+
+```
+models/scripts/fill.sql
 ```
