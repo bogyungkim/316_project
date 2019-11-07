@@ -1,0 +1,11 @@
+CREATE TABLE post (
+  pid INTEGER NOT NULL PRIMARY KEY,
+  chid INTEGER NOT NULL PRIMARY KEY REFERENCES channel(chid),
+  uid INTEGER NOT NULL REFERENCES users(uid),
+  pContext VARCHAR(150) NOT NULL,
+  vote INTEGER NOT NULL,
+  location VARCHAR(40) NOT NULL,
+  report INTEGER NOT NULL,
+  netid VARCHAR(32) FOREIGN KEY REFERENCES users(netid),
+  deletedAt TIMESTAMP default NULL
+);

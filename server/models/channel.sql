@@ -1,0 +1,3 @@
+CREATE TABLE channel (
+  chid INTEGER NOT NULL PRIMARY KEY
+);

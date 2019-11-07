@@ -1,0 +1,5 @@
+CREATE TABLE publishes (
+  pid INTEGER NOT NULL PRIMARY KEY REFERENCES post(pid),
+  uid INTEGER NOT NULL REFERENCES users(uid),
+  time TIMESTAMP NOT NULL
+);
