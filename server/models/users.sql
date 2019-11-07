@@ -4,5 +4,6 @@ CREATE TABLE users (
   password VARCHAR(256) NOT NULL,
   level INTEGER NOT NULL,
   netid VARCHAR(32),
-  deletedAt TIMESTAMP default NULL
+  deletedAt TIMESTAMP default NULL,
+  UNIQUE(netid)
 );

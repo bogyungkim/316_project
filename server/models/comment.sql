@@ -2,8 +2,9 @@ CREATE TABLE comment (
   cid INTEGER NOT NULL PRIMARY KEY,
   uid INTEGER NOT NULL REFERENCES users(uid),
   vote INTEGER NOT NULL,
-  rContext VARCHAR(150) NOT NULL,
+  cContext VARCHAR(150) NOT NULL,
   report INTEGER,
-  netid VARCHAR(32) FOREIGN KEY REFERENCES users(netid),
-  deletedAt TIMESTAMP default NULL
+  netid VARCHAR(32),
+  deletedAt TIMESTAMP default NULL,
+  FOREIGN KEY (netid) REFERENCES users(netid)
 );

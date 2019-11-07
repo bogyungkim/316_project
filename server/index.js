@@ -27,6 +27,6 @@ app.post('/', (req, res) => {
 app.get('/users/get', db.getUsers);
 // app.post('/users/create', db.createUser);
 app.post('/users/create', db.createUser);
-app.post('/users/createTable', db.createTable);
+//app.post('/users/createTable', db.createTable);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));

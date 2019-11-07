@@ -1,20 +1,20 @@
 import {Pool} from 'pg'
 
-// const pool = new Pool({
-//   user: 'me',
-//   host: 'localhost',
-//   database: 'api',
-//   password: process.env.PASSWORD,
-//   port: process.env.API_PORT,
-// });
-
 const pool = new Pool({
-  user: process.env.RDS_USER,
-  host: process.env.RDS_ENDPOINT,
-  database: process.env.DATABASE,
-  password: process.env.RDS_PASSWORD,
-  port: process.env.RDS_PORT,
+  user: 'me',
+  host: 'localhost',
+  database: 'api',
+  password: process.env.PASSWORD,
+  port: process.env.API_PORT,
 });
+
+// const pool = new Pool({
+//   user: process.env.RDS_USER,
+//   host: process.env.RDS_ENDPOINT,
+//   database: process.env.DATABASE,
+//   password: process.env.RDS_PASSWORD,
+//   port: process.env.RDS_PORT,
+// });
 
 const getUsers = (request, response) => {
   pool.query('SELECT * FROM users', (error, results) => {
@@ -44,17 +44,17 @@ const createUser = (request, response) => {
   })
 };
 
-const createTable = (request, response) => {
-  pool.query('CREATE TABLE users (uid INTEGER NOT NULL PRIMARY KEY, phoneNumber CHAR(10) NOT NULL UNIQUE, password VARCHAR(256) NOT NULL, level INTEGER NOT NULL, netid VARCHAR(32), deletedAt TIMESTAMP default NULL)',
-    (error, results) => {
-    console.log('error', error);
-    if (error) return response.status(400).send(error);
-    return response.status(200).send(results);
-    })
-};
+// const createTable = (request, response) => {
+//   pool.query('CREATE TABLE users (uid INTEGER NOT NULL PRIMARY KEY, phoneNumber CHAR(10) NOT NULL UNIQUE, password VARCHAR(256) NOT NULL, level INTEGER NOT NULL, netid VARCHAR(32), deletedAt TIMESTAMP default NULL)',
+//     (error, results) => {
+//     console.log('error', error);
+//     if (error) return response.status(400).send(error);
+//     return response.status(200).send(results);
+//     })
+// };
 
 export default {
   getUsers,
   createUser,
-  createTable
+  //createTable
 };
