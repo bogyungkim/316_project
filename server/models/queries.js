@@ -44,20 +44,7 @@ const createUser = (request, response) => {
   })
 };
 
-// const createTable = (request, response) => {
-//   pool.query('CREATE TABLE users (uid INTEGER NOT NULL PRIMARY KEY, phoneNumber CHAR(10) NOT NULL UNIQUE, password VARCHAR(256) NOT NULL, level INTEGER NOT NULL, netid VARCHAR(32), deletedAt TIMESTAMP default NULL)',
-//     (error, results) => {
-//     console.log('error', error);
-//     if (error) return response.status(400).send(error);
-//     return response.status(200).send(results);
-//     })
-// };
 
-export default {
-  getUsers,
-  createUser,
-  //createTable
-};
 
 
 //createChannel
@@ -125,3 +112,21 @@ const getPost = (request, response) => {
 // 'insert into post (pid, chid, uid, pContext, vote, location, report, netid, deletedAt) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)'
 // 'insert into comment (cid, uid, vote, cContext, report, netid, deletedAt) values ($1, $2, $3, $4, $5, $6, $7)'
 // 'insert into publishes (pid, uid, time) values ($1, $2, $3)'
+
+
+//BELOW IS AWS APIS
+
+// const createTable = (request, response) => {
+//   pool.query('CREATE TABLE users (uid INTEGER NOT NULL PRIMARY KEY, phoneNumber CHAR(10) NOT NULL UNIQUE, password VARCHAR(256) NOT NULL, level INTEGER NOT NULL, netid VARCHAR(32), deletedAt TIMESTAMP default NULL)',
+//     (error, results) => {
+//     console.log('error', error);
+//     if (error) return response.status(400).send(error);
+//     return response.status(200).send(results);
+//     })
+// };
+
+export default {
+  getUsers,
+  createUser,
+  //createTable
+};
