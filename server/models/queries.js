@@ -58,3 +58,70 @@ export default {
   createUser,
   //createTable
 };
+
+
+//createChannel
+const createChannel = (request, response) => {
+  const { chid } = request.body;
+
+  console.log(request.body);
+  // pool.query
+
+  // return response.status(200).send('succeed');
+  pool.query('insert into channel (chid) values ($1)', [chid], (error, results) => {
+    if (error) {
+      console.log('error', error);
+      throw error
+    }
+    console.log('result', results);
+    response.status(200).send(`Channel added with ID: ${results}`);
+  })
+};
+
+//getChannel
+const getChannel = (request, response) => {
+  pool.query('SELECT * FROM channel', (error, results) => {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      response.status(400).json(error);
+    }
+    response.status(200).json(results);
+  });
+};
+
+//createPost
+const createPost = (request, response) => {
+  const { pid, chid, uid, pContext, vote, location, report, netid, deletedAt } = request.body;
+
+  console.log(request.body);
+  // pool.query
+
+  // return response.status(200).send('succeed');
+  pool.query('insert into post (pid, chid, uid, pContext, vote, location, report, netid, deletedAt) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [pid, chid, uid, pContext, vote, location, report, netid, deletedAt], (error, results) => {
+    if (error) {
+      console.log('error', error);
+      throw error
+    }
+    console.log('result', results);
+    response.status(200).send(`Channel added with ID: ${results}`);
+  })
+};
+
+//getPost
+const getPost = (request, response) => {
+  pool.query('SELECT * FROM post', (error, results) => {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      response.status(400).json(error);
+    }
+    response.status(200).json(results);
+  });
+};
+
+
+// 'insert into channel (chid) values ($1)'
+// 'insert into post (pid, chid, uid, pContext, vote, location, report, netid, deletedAt) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)'
+// 'insert into comment (cid, uid, vote, cContext, report, netid, deletedAt) values ($1, $2, $3, $4, $5, $6, $7)'
+// 'insert into publishes (pid, uid, time) values ($1, $2, $3)'
