@@ -24,9 +24,19 @@ app.post('/', (req, res) => {
   return res.send('Received a POST HTTP method');
 });
 
-app.get('/users/get', db.getUsers);
-// app.post('/users/create', db.createUser);
-app.post('/users/create', db.createUser);
-//app.post('/users/createTable', db.createTable);
+app.get('/users', db.getUsers);
+app.post('/users', db.createUser);
+
+app.get('/channels', db.getChannels);
+app.post('/channels', db.createChannel);
+
+app.get('/posts', db.getPosts);
+app.post('/posts', db.createPost);
+
+app.get('/comments', db.getComments);
+app.post('/comments', db.createComment);
+
+app.get('/publishes', db.getPublishes);
+app.post('/publishes', db.createPublishes);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
