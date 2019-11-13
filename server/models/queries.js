@@ -1,20 +1,20 @@
 import {Pool} from 'pg'
 
-// const pool = new Pool({
-//   user: 'me',
-//   host: 'localhost',
-//   database: 'api',
-//   password: process.env.PASSWORD,
-//   port: process.env.API_PORT,
-// });
-
 const pool = new Pool({
-  user: process.env.RDS_USER,
-  host: process.env.RDS_ENDPOINT,
-  database: process.env.RDS_DATABASE,
-  password: process.env.RDS_PASSWORD,
-  port: process.env.RDS_PORT,
+  user: 'me',
+  host: 'localhost',
+  database: 'api',
+  password: process.env.PASSWORD,
+  port: process.env.API_PORT,
 });
+
+// const pool = new Pool({
+//   user: process.env.RDS_USER,
+//   host: process.env.RDS_ENDPOINT,
+//   database: process.env.RDS_DATABASE,
+//   password: process.env.RDS_PASSWORD,
+//   port: process.env.RDS_PORT,
+// });
 
 // ************************* Users CRUD ***************************
 
