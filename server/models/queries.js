@@ -17,6 +17,17 @@ const pool = new Pool({
 //   port: process.env.RDS_PORT,
 // });
 
+// ************************* Query Reflection ***************************
+const query = (text, params) => {
+  pool.query(text, params, (error, results) => {
+    if (error) {
+      console.log('error', error);
+      response.status(400).json(error);
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
 // ************************* Users CRUD ***************************
 
 const getUsers = (request, response) => {
@@ -106,8 +117,6 @@ const createPost = (request, response) => {
     response.status(200).send(`Channel added with ID: ${results}`);
   })
 };
-
-
 
 // ************************* Comment CRUD ***************************
 
