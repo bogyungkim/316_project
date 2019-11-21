@@ -36,7 +36,4 @@ app.post('/posts', db.createPost);
 app.get('/comments', db.getComments);
 app.post('/comments', db.createComment);
 
-app.get('/publishes', db.getPublishes);
-app.post('/publishes', db.createPublishes);
-
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
