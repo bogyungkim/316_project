@@ -36,6 +36,7 @@ CREATE TABLE post (
 CREATE TABLE comment (
   cid INTEGER NOT NULL PRIMARY KEY,
   uid INTEGER NOT NULL REFERENCES users(uid),
+  pid INTEGER NOT NULL REFERENCES post(pid),
   context VARCHAR(150) NOT NULL,
   deletedAt TIMESTAMP default NULL
 );
@@ -48,4 +49,4 @@ insert into channel values (1, 'food');
 insert into post values (1, 1, 1, 'title', 'post content', 'https://firebasestorage.googleapis.com/v0/b/startiq.appspot.com/o/imgs%2FfakeImgForProfile.png?alt=media&token=8224719a-3243-4edd-a4d7-daa37abbd669', 0, 0, 0, null);
 insert into post values (2, 1, 1, 'title', 'post content', 'https://firebasestorage.googleapis.com/v0/b/startiq.appspot.com/o/imgs%2FfakeImgForProfile.png?alt=media&token=8224719a-3243-4edd-a4d7-daa37abbd669', 1, 1, 1, null);
 
-insert into comment values (1, 1, 'comment context', null);
+insert into comment values (1, 1, 1, 'comment context', null);
