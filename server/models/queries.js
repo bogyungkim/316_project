@@ -1,5 +1,7 @@
 import {Pool} from 'pg'
-import bcrypt from 'bcrypt';
+import Helper from '../controller/helper'
+var promiseAny = require('promise-any');
+
 
 const pool = new Pool({
   user: 'me',
@@ -17,49 +19,67 @@ const pool = new Pool({
 //   port: process.env.RDS_PORT,
 // });
 
-// ************************* Query Reflection ***************************
-const query = (text, params) => {
-  pool.query(text, params, (error, results) => {
-    if (error) {
-      console.log('error', error);
-      response.status(400).json(error);
-    }
-    response.status(200).json(results.rows);
-  });
-};
+const authenticate = (id, password) => {
+  return promiseAny([
+    authenticateWithUsername(id, password),
+    authenticateWithPhoneNumber(id, password)
+  ]); 
+}
+
+const authenticateWithUsername = async (username, password) => {
+  const queryText = 'SELECT * FROM users WHERE username = $1';
+  const { rows } = await pool.query(queryText, [username]);
+  const user = rows[0];
+  if(user) {
+    return checkPassword(user, password);
+  } else {
+    return Promise.reject("No user with username " + username);
+  }
+}
+
+const authenticateWithPhoneNumber = async (phonenumber, password) => {
+  const queryText = 'SELECT * FROM users WHERE phonenumber = $1';
+  const { rows } = await pool.query(queryText, [phonenumber]);
+  const user = rows[0];
+  if(user) {
+    return checkPassword(user, password);
+  } else {
+    return Promise.reject("No user with phonenumber " + phonenumber);
+  }
+}
+
+const checkPassword = (user, password) => {
+  if(Helper.comparePassword(user.password, password)) {
+    // Optionally, Generate token, store token, return token
+    return Promise.resolve(user.username);
+  } else {
+    return Promise.reject("Password mismatch");
+  }
+}
 
 // ************************* Users CRUD ***************************
 
-const getUsers = (request, response) => {
+const getUsers = () => {
   pool.query('SELECT * FROM users', (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      response.status(400).json(error);
-    }
-    response.status(200).json(results.rows);
+    if (error) return Promise.reject(error);
+    return Promise.resolve(result.rows);
   });
 };
 
-const createUser = (request, response) => {
-  const { uid, username, phoneNumber, password, clout, deletedAt } = request.body;
-  const saltRounds = 10;
-  console.log(request.body);
-
-  bcrypt.hash(password, saltRounds, (err, hash) => {
-    return pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, results) => {
-      if (error) {
-        console.log('error', error);
-        throw error
-      }
-      console.log('result', results);
-      // response.status(200).send(`User added with ID: ${results}`);
-      // bcrypt.compare(password, hash, (err, result) => {
-      //   console.log(result)
-      // });
-    })
+const createUser = (user) => {
+  const { uid, username, phoneNumber, password, clout, deletedAt } = user;
+  const hash = Helper.hashPassword(password);
+  return pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, results) => {
+    if (error) { return Promise.reject(error); }
+    return Promise.resolve();
   });
 };
+
+const getOneUserByName = async (username) => {
+  const queryText = 'SELECT * FROM users WHERE username = $1';
+  const { rows } = await pool.query(queryText, [username]);
+  return rows[0] ? Promise.resolve(rows[0]) : Promise.reject("Can't find user with name " + name)
+}
 
 // ************************* Channel CRUD ***************************
 
@@ -148,7 +168,8 @@ const createComment = (request, response) => {
 
 
 export default {
-  getUsers, createUser,
+  authenticate,
+  getUsers, createUser, getOneUserByName,
   getChannels, createChannel,
   getPosts, createPost,
   getComments, createComment
