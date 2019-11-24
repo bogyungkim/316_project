@@ -2,7 +2,6 @@ import {Pool} from 'pg'
 import Helper from '../controller/helper'
 var promiseAny = require('promise-any');
 
-
 const pool = new Pool({
   user: 'me',
   host: 'localhost',
@@ -66,6 +65,18 @@ const getUsers = () => {
   });
 };
 
+const updateUsers = (request, response) => {
+  var query1 = 'update users u set deletedAt = now() from post as p where p.uid = u.uid and p.flag>=3'
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      response.status(400).json(error);
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
 const createUser = (user) => {
   const { uid, username, phoneNumber, password, clout, deletedAt } = user;
   const hash = Helper.hashPassword(password);
@@ -113,7 +124,22 @@ const createChannel = (request, response) => {
 // ************************* Post CRUD ***************************
 
 const getPosts = (request, response) => {
-  pool.query('SELECT * FROM post', (error, results) => {
+  var query2 = 'select * from post where deletedAt is null'
+
+  pool.query(query2, (error, results) => {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      response.status(400).json(error);
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+const updatePosts = (request, response) => {
+  var query1 = 'update post set deletedAt = now() where flag>=3'
+
+  pool.query(query1, (error, results) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
@@ -141,7 +167,20 @@ const createPost = (request, response) => {
 // ************************* Comment CRUD ***************************
 
 const getComments = (request, response) => {
-  pool.query('SELECT * FROM comment', (error, results) => {
+  var query2 = 'select * from comment where deletedAt is null'
+  pool.query(query2, (error, results) => {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      response.status(400).json(error);
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+const updateComments = (request, response) => {
+  var query1 = 'update comment c set deletedAt = now() from post as p where p.pid = c.pid and p.flag>=3'
+  pool.query(query1, (error, results) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
@@ -167,10 +206,51 @@ const createComment = (request, response) => {
 };
 
 
+// ************************* Flag CRUD ***************************
+
+const getFlags = (request, response) => {
+  pool.query('SELECT * FROM flag', (error, results) => {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      response.status(400).json(error);
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
+// const updateFlags = (request, response) => {
+//   pool.query('update flag f set flag +=1 where uid=1', (error, results) => {
+//     console.log('results', results);
+//     if (error) {
+//       console.log('error', error);
+//       response.status(400).json(error);
+//     }
+//     response.status(200).json(results.rows);
+//   });
+// };
+
+const createFlag = (request, response) => {
+  const {pid, num} = request.body;
+
+  console.log(request.body);
+  
+  pool.query('insert into flag (pid, num) values ($1, $2)', [pid, num], (error, results) => {
+    if (error) {
+      console.log('error', error);
+      throw error
+    }
+    console.log('result', results);
+    response.status(200).send(`Flag added with ID: ${results}`);
+  })
+};
+
+
 export default {
   authenticate,
-  getUsers, createUser, getOneUserByName,
+  getUsers, updateUsers, createUser, getOneUserByName,
   getChannels, createChannel,
-  getPosts, createPost,
-  getComments, createComment
+  getPosts, updatePosts, createPost,
+  getComments, updateComments, createComment,
+  getFlags, createFlag //,updateFlag
 };
