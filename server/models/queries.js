@@ -58,9 +58,10 @@ const checkPassword = (user, password) => {
 
 // ************************* Users CRUD ***************************
 
-const getUsers = () => {
+const getUsers = (request, response) => {
   pool.query('SELECT * FROM users', (error, results) => {
     if (error) return Promise.reject(error);
+    response.status(200).json(results.rows);
     return Promise.resolve(results.rows);
   });
 };

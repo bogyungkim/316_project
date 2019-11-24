@@ -25,7 +25,7 @@ app.post('/', (req, res) => {
   return res.send('Received a POST HTTP method');
 });
 
-app.put('/users', db.updateUsers);
+// app.put('/users', db.updateUsers);
 app.get('/users', db.getUsers);
 app.post('/users', db.createUser);
 
