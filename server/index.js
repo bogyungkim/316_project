@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors'
 import bodyParser from 'body-parser';
 import db from './models/queries';
+import user_controller from './controller/user_controller';
 
 const app = express();
 
@@ -42,5 +43,6 @@ app.post('/comments', db.createComment);
 //app.put('/flags', db.updateFlags);
 app.get('/flags', db.getFlags);
 app.post('/flags', db.createFlag);
+app.post('/login', user_controller.login);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
