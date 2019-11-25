@@ -10,6 +10,9 @@ const pool = new Pool({
   port: process.env.API_PORT,
 });
 
+function test() {
+  return console.log("hello");
+}
 // const pool = new Pool({
 //   user: process.env.RDS_USER,
 //   host: process.env.RDS_ENDPOINT,
@@ -110,15 +113,15 @@ const createChannel = (request, response) => {
   const { chid, cname } = request.body;
 
   console.log(request.body);
-  
+
   pool.query('insert into channel (chid, cname) values ($1, $2)', [chid, cname], (error, results) => {
     if (error) {
       console.log('error', error);
-      throw error
+      throw error;
     }
     console.log('result', results);
     response.status(200).send(`Channel added with ID: ${results}`);
-  })
+  });
 };
 
 
@@ -154,15 +157,15 @@ const createPost = (request, response) => {
   const { pid, chid, uid, title, detail, photoUrl, upVote, downVote, flag, deletedAt } = request.body;
 
   console.log(request.body);
-  
+
   pool.query('insert into post (pid, chid, uid, title, detail, photoUrl, upVote, downVote, flag, deletedAt) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [pid, chid, uid, title, detail, photoUrl, upVote, downVote, flag, deletedAt], (error, results) => {
     if (error) {
       console.log('error', error);
-      throw error
+      throw error;
     }
     console.log('result', results);
     response.status(200).send(`Channel added with ID: ${results}`);
-  })
+  });
 };
 
 // ************************* Comment CRUD ***************************
@@ -195,15 +198,15 @@ const createComment = (request, response) => {
   const { cid, uid, context, deletedAt } = request.body;
 
   console.log(request.body);
-  
+
   pool.query('insert into comment (cid, uid, context, deletedAt) values ($1, $2, $3, $4)', [cid, uid, context, deletedAt], (error, results) => {
     if (error) {
       console.log('error', error);
-      throw error
+      throw error;
     }
     console.log('result', results);
     response.status(200).send(`Channel added with ID: ${results}`);
-  })
+  });
 };
 
 
@@ -253,5 +256,6 @@ export default {
   getChannels, createChannel,
   getPosts, updatePosts, createPost,
   getComments, updateComments, createComment,
-  getFlags, createFlag //,updateFlag
+  getFlags, createFlag, //,updateFlag
+  test
 };
