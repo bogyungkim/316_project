@@ -1,1 +1,11 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# files
 .idea
+316_project-master.csv
+.env

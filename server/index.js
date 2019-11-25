@@ -1,6 +1,6 @@
-import 'dotenv/config';
+import serverless from 'serverless-http';
 import express from 'express';
-import cors from 'cors'
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import db from './models/queries';
 import user_controller from './controller/user_controller';
@@ -18,11 +18,22 @@ app.use(
 
 app.use(cors());
 
-app.get('/', (req, res) => {
-  return res.send('Received a GET HTTP method');
+app.get('/', async (req, res, next) => {
+  const response = {
+    status: 200,
+    method: 'GET',
+    body: 'success'
+  };
+  await res.status(200).send(response);
 });
-app.post('/', (req, res) => {
-  return res.send('Received a POST HTTP method');
+
+app.post('/', async (req, res, next) => {
+  const response = {
+    status: 200,
+    method: 'POST',
+    body: 'success'
+  };
+  await res.status(200).send(response);
 });
 
 // app.put('/users', db.updateUsers);
@@ -46,3 +57,9 @@ app.get('/flags', db.getFlags);
 app.post('/flags', db.createFlag);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
+app.on('error', (result) => console.log(result));
+
+const server = serverless(app);
+export {
+  server
+};

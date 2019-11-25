@@ -1,0 +1,135 @@
+service: 316_project
+
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+# you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:stage, 'us-east-1'}
+  stackName: vortex-stack
+
+# you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "iam:CreateRole"
+        - "cloudformation:CreateStack"
+#        - "cloudformation:Describe*"
+#        - "cloudformation:ValidateTemplate"
+        - "cloudformation:UpdateStack"
+#        - "cloudformation:List*"
+        - "iam:GetRole"
+        - "iam:CreateRole"
+#        - "iam:PutRolePolicy"
+#        - "iam:DeleteRolePolicy"
+#        - "iam:DeleteRole"
+        - "iam:PassRole"
+        - "lambda:UpdateFunctionCode"
+        - "lambda:Get*"
+        - "lambda:CreateFunction"
+        - "lambda:InvokeFunction"
+#        - "lambda:UpdateFunctionConfiguration"
+#        - "lambda:PublishVersion"
+#        - "lambda:DeleteFunction"
+#        - "lambda:List*"
+        - "lambda:AddPermission"
+        - "s3:CreateBucket"
+#        - "s3:DeleteObject"
+        - "s3:GetObject"
+#        - "s3:GetBucketLocation"
+        - "s3:ListBucket"
+        - "s3:PutObject"
+#        - "s3:DeleteBucket"
+      Resource: "*"
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:PutObject"
+#      Resource:
+#        Fn::Join:
+#          - ""
+#          - - "arn:aws:s3:::"
+#            - "Ref" : "ServerlessDeploymentBucket"
+#            - "/*"
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+package:
+  individually: true
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+functions:
+  index:
+    handler: index.server
+    events:
+      - http:
+          path: /
+          cors: true
+          method: any
+      - http:
+          path: /{any+}
+          cors: true
+          method: any
+#      - s3: ${env:BUCKET}
+#      - schedule: rate(10 minutes)
+#      - sns: greeter-topic
+#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
+#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
+#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
+#      - iot:
+#          sql: "SELECT * FROM 'some_topic'"
+#      - cloudwatchEvent:
+#          event:
+#            source:
+#              - "aws.ec2"
+#            detail-type:
+#              - "EC2 Instance State-change Notification"
+#            detail:
+#              state:
+#                - pending
+#      - cloudwatchLog: '/aws/lambda/hello'
+#      - cognitoUserPool:
+#          pool: MyUserPool
+#          trigger: PreSignUp
+#      - alb:
+#          listenerArn: arn:aws:elasticloadbalancing:us-east-1:XXXXXX:listener/app/my-load-balancer/50dc6c495c0c9188/
+#          priority: 1
+#          conditions:
+#            host: example.com
+#            path: /hello
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+
+# you can add CloudFormation resource templates here
+#resources:
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"
+
+custom:
+  webpack:
+    webpackConfig: webpack.config.js
+    includeModules: true
+
+plugins:
+  - serverless-offline
+  - serverless-webpack
+  - serverless-dotenv-plugin
