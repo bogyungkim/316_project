@@ -4,7 +4,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import db from './models/queries';
 import user_controller from './controller/user_controller';
-
+import 'dotenv/config';
 const app = express();
 
 app.set('port', process.env.PORT || process.env.API_PORT);
