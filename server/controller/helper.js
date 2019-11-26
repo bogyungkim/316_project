@@ -1,18 +1,13 @@
 import bcrypt from 'bcryptjs';
 
-// class Helper {
-//   async hashPassword(password) {
-//
-//   }
-// }
-const Helper = {
-  hashPassword(password) {
-    return bcrypt.hashSync(password, bcrypt.genSaltSync(8));
-  },
-
-  comparePassword(hashPassword, password) {
-    return bcrypt.compareSync(password, hashPassword);
+class Helper {
+  static async hashPassword(password) {
+    return await bcrypt.hashSync(password, await bcrypt.genSaltSync(8));
   }
-};
+
+  static async comparePassword(hashPassword, password) {
+    return await bcrypt.compareSync(password, hashPassword);
+  }
+}
 
 export default Helper;

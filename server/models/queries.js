@@ -14,9 +14,9 @@ const initializer = async (request, response) => {
   const sql = await axios.get('https://316-project.s3.amazonaws.com/fill.sql');
   await pool.query(sql.data, (error, result) => {
     if (error) {
-      response.status(400).json({ StatusCode: 400, Error: error});
+      return response.status(400).json({ StatusCode: 400, Error: error});
     } else {
-      response.status(200).send({ StatusCode: 200 });
+      return response.status(200).send({ StatusCode: 200 });
     }
   });
 };
@@ -69,7 +69,7 @@ const checkPassword = (user, password) => {
 const getUsers = (request, response) => {
   pool.query('SELECT * FROM users', (error, results) => {
     if (error) return Promise.reject(error);
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
     return Promise.resolve(results.rows);
   });
 };
@@ -80,20 +80,20 @@ const updateUsers = (request, response) => {
     console.log('results', results.rows);
     if (error) {
       console.log('error', error);
-      response.status(400).json(error);
+      return response.status(400).json(error);
     }
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
   });
 }; // WIP
 
 const createUser = async (request, response) => {
   const { uid, username, phoneNumber, password, clout, deletedAt } = response.req.body;
-  const hash = Helper.hashPassword(password);
+  const hash = await Helper.hashPassword(password);
   return await pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, result) => {
     if (error) {
-      response.status(400).json({ statusCode: 400, error: error});
+      return response.status(400).json({ statusCode: 400, error: error});
     }
-    response.status(200).json({ statusCode: 200 });
+    return response.status(200).json({ statusCode: 200 });
   });
 };
 
@@ -110,9 +110,9 @@ const getChannels = (request, response) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
-      response.status(400).json(error);
+      return response.status(400).json(error);
     }
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -127,7 +127,7 @@ const createChannel = (request, response) => {
       throw error;
     }
     console.log('result', results);
-    response.status(200).send(`Channel added with ID: ${results}`);
+    return response.status(200).send(`Channel added with ID: ${results}`);
   });
 };
 
@@ -141,9 +141,9 @@ const getPosts = (request, response) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
-      response.status(400).json(error);
+      return response.status(400).json(error);
     }
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -154,9 +154,9 @@ const updatePosts = (request, response) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
-      response.status(400).json(error);
+      return response.status(400).json(error);
     }
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -171,7 +171,7 @@ const createPost = (request, response) => {
       throw error;
     }
     console.log('result', results);
-    response.status(200).send(`Channel added with ID: ${results}`);
+    return response.status(200).send(`Channel added with ID: ${results}`);
   });
 };
 
@@ -183,9 +183,9 @@ const getComments = (request, response) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
-      response.status(400).json(error);
+      return response.status(400).json(error);
     }
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -195,9 +195,9 @@ const updateComments = (request, response) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
-      response.status(400).json(error);
+      return response.status(400).json(error);
     }
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -212,7 +212,7 @@ const createComment = (request, response) => {
       throw error;
     }
     console.log('result', results);
-    response.status(200).send(`Channel added with ID: ${results}`);
+    return response.status(200).send(`Channel added with ID: ${results}`);
   });
 };
 
@@ -224,9 +224,9 @@ const getFlags = (request, response) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
-      response.status(400).json(error);
+      return response.status(400).json(error);
     }
-    response.status(200).json(results.rows);
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -235,9 +235,9 @@ const getFlags = (request, response) => {
 //     console.log('results', results);
 //     if (error) {
 //       console.log('error', error);
-//       response.status(400).json(error);
+//       return response.status(400).json(error);
 //     }
-//     response.status(200).json(results.rows);
+//     return response.status(200).json(results.rows);
 //   });
 // };
 
@@ -252,7 +252,7 @@ const createFlag = (request, response) => {
       throw error
     }
     console.log('result', results);
-    response.status(200).send(`Flag added with ID: ${results}`);
+    return response.status(200).send(`Flag added with ID: ${results}`);
   })
 };
 
