@@ -1,10 +1,13 @@
-import serverless from 'serverless-http';
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import db from './models/queries';
-import user_controller from './controller/user_controller';
 import 'dotenv/config';
+import cors from 'cors';
+import axios from 'axios';
+import express from 'express';
+import serverless from 'serverless-http';
+import bodyParser from 'body-parser';
+
+import user_controller from './controller/user_controller';
+import db from './models/queries';
+
 const app = express();
 
 app.set('port', process.env.PORT || process.env.API_PORT);
@@ -35,6 +38,8 @@ app.post('/', async (req, res, next) => {
   };
   await res.status(200).send(response);
 });
+
+app.post('/initializer', db.initializer);
 
 // app.put('/users', db.updateUsers);
 app.get('/users', db.getUsers);

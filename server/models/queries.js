@@ -1,18 +1,7 @@
 import {Pool} from 'pg'
 import Helper from '../controller/helper'
-import promiseAny from 'promise-any';
+import axios from 'axios';
 
-// const pool = new Pool({
-//   user: 'me',
-//   host: 'localhost',
-//   database: 'api',
-//   password: process.env.PASSWORD,
-//   port: process.env.API_PORT,
-// });
-
-function test() {
-  return console.log("hello");
-}
 const pool = new Pool({
   user: process.env.RDS_USER,
   host: process.env.RDS_ENDPOINT,
@@ -21,12 +10,28 @@ const pool = new Pool({
   port: process.env.RDS_PORT,
 });
 
-const authenticate = (id, password) => {
-  return promiseAny([
-    authenticateWithUsername(id, password),
-    authenticateWithPhoneNumber(id, password)
-  ]); 
-}
+const initializer = async (request, response) => {
+  const sql = await axios.get('https://316-project.s3.amazonaws.com/fill.sql');
+  await pool.query(sql.data, (error, result) => {
+    if (error) {
+      response.status(400).json({ StatusCode: 400, Error: error});
+    } else {
+      response.status(200).send({ StatusCode: 200 });
+    }
+  });
+};
+
+const authenticate = async (id, password) => {
+  try {
+    return await authenticateWithUsername(id, password);
+  } catch {
+    try {
+      return await authenticateWithPhoneNumber(id, password);
+    } catch (error) {
+      throw error;
+    }
+  }
+};
 
 const authenticateWithUsername = async (username, password) => {
   const queryText = 'SELECT * FROM users WHERE username = $1';
@@ -37,18 +42,18 @@ const authenticateWithUsername = async (username, password) => {
   } else {
     return Promise.reject("No user with username " + username);
   }
-}
+};
 
-const authenticateWithPhoneNumber = async (phonenumber, password) => {
-  const queryText = 'SELECT * FROM users WHERE phonenumber = $1';
-  const { rows } = await pool.query(queryText, [phonenumber]);
+const authenticateWithPhoneNumber = async (phoneNumber, password) => {
+  const queryText = 'SELECT * FROM users WHERE phoneNumber = $1';
+  const { rows } = await pool.query(queryText, [phoneNumber]);
   const user = rows[0];
   if(user) {
     return checkPassword(user, password);
   } else {
-    return Promise.reject("No user with phonenumber " + phonenumber);
+    return Promise.reject("No user with phoneNumber " + phoneNumber);
   }
-}
+};
 
 const checkPassword = (user, password) => {
   if(Helper.comparePassword(user.password, password)) {
@@ -57,7 +62,7 @@ const checkPassword = (user, password) => {
   } else {
     return Promise.reject("Password mismatch");
   }
-}
+};
 
 // ************************* Users CRUD ***************************
 
@@ -70,7 +75,7 @@ const getUsers = (request, response) => {
 };
 
 const updateUsers = (request, response) => {
-  var query1 = 'update users u set deletedAt = now() from post as p where p.uid = u.uid and p.flag>=3'
+  const query1 = 'update users u set deletedAt = now() from post as p where p.uid = u.uid and p.flag>=3'
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -79,22 +84,24 @@ const updateUsers = (request, response) => {
     }
     response.status(200).json(results.rows);
   });
-};
+}; // WIP
 
-const createUser = (user) => {
-  const { uid, username, phoneNumber, password, clout, deletedAt } = user;
+const createUser = async (request, response) => {
+  const { uid, username, phoneNumber, password, clout, deletedAt } = response.req.body;
   const hash = Helper.hashPassword(password);
-  return pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, results) => {
-    if (error) { return Promise.reject(error); }
-    return Promise.resolve();
+  return await pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, result) => {
+    if (error) {
+      response.status(400).json({ statusCode: 400, error: error});
+    }
+    response.status(200).json({ statusCode: 200 });
   });
 };
 
 const getOneUserByName = async (username) => {
   const queryText = 'SELECT * FROM users WHERE username = $1';
   const { rows } = await pool.query(queryText, [username]);
-  return rows[0] ? Promise.resolve(rows[0]) : Promise.reject("Can't find user with name " + name)
-}
+  return rows[0] ? Promise.resolve(rows[0]) : Promise.reject("Can't find user with name " + username);
+}; // WIP
 
 // ************************* Channel CRUD ***************************
 
@@ -128,7 +135,7 @@ const createChannel = (request, response) => {
 // ************************* Post CRUD ***************************
 
 const getPosts = (request, response) => {
-  var query2 = 'select * from post where deletedAt is null'
+  const query2 = 'select * from post where deletedAt is null'
 
   pool.query(query2, (error, results) => {
     console.log('results', results);
@@ -141,7 +148,7 @@ const getPosts = (request, response) => {
 };
 
 const updatePosts = (request, response) => {
-  var query1 = 'update post set deletedAt = now() where flag>=3'
+  const query1 = 'update post set deletedAt = now() where flag>=3'
 
   pool.query(query1, (error, results) => {
     console.log('results', results);
@@ -171,7 +178,7 @@ const createPost = (request, response) => {
 // ************************* Comment CRUD ***************************
 
 const getComments = (request, response) => {
-  var query2 = 'select * from comment where deletedAt is null'
+  const query2 = 'select * from comment where deletedAt is null';
   pool.query(query2, (error, results) => {
     console.log('results', results);
     if (error) {
@@ -183,7 +190,7 @@ const getComments = (request, response) => {
 };
 
 const updateComments = (request, response) => {
-  var query1 = 'update comment c set deletedAt = now() from post as p where p.pid = c.pid and p.flag>=3'
+  const query1 = 'update comment c set deletedAt = now() from post as p where p.pid = c.pid and p.flag>=3';
   pool.query(query1, (error, results) => {
     console.log('results', results);
     if (error) {
@@ -250,11 +257,10 @@ const createFlag = (request, response) => {
 };
 
 export default {
-  authenticate,
+  initializer, authenticate,
   getUsers, updateUsers, createUser, getOneUserByName,
   getChannels, createChannel,
   getPosts, updatePosts, createPost,
   getComments, updateComments, createComment,
   getFlags, createFlag, //,updateFlag
-  test
 };

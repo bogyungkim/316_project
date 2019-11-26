@@ -1,8 +1,12 @@
-import {bcrypt} from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 
+// class Helper {
+//   async hashPassword(password) {
+//
+//   }
+// }
 const Helper = {
   hashPassword(password) {
-    // if (password === undefined) return "";
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8));
   },
 
