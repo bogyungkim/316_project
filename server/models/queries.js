@@ -208,6 +208,17 @@ const updatePosts = (request, response) => {
   });
 };
 
+const updatePostsUpvote = (request, response) => {
+  pool.query('update flag f set flag +=1 where pid = $1 and uid = $2', [pid, num], (error, results)=> {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).send(`upVote added with ID: ${results}`);
+  });
+};
+
 const createPost = (request, response) => {
   const { pid, chid, uid, title, detail, photoUrl, upVote, downVote, flag, deletedAt } = request.body;
 
@@ -219,7 +230,7 @@ const createPost = (request, response) => {
       throw error;
     }
     console.log('result', results);
-    return response.status(200).send(`Channel added with ID: ${results}`);
+    return response.status(200).send(`Post added with ID: ${results}`);
   });
 };
 
@@ -284,7 +295,7 @@ const createComment = (request, response) => {
       throw error;
     }
     console.log('result', results);
-    return response.status(200).send(`Channel added with ID: ${results}`);
+    return response.status(200).send(`Comment added with ID: ${results}`);
   });
 };
 
