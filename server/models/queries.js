@@ -326,30 +326,19 @@ const getFlags = (request, response) => {
   });
 };
 
-// const updateFlags = (request, response) => {
-//   pool.query('update flag f set flag +=1 where uid=1', (error, results) => {
-//     console.log('results', results);
-//     if (error) {
-//       console.log('error', error);
-//       return response.status(400).json(error);
-//     }
-//     return response.status(200).json(results.rows);
-//   });
-// };
-
 const createFlag = (request, response) => {
   const {pid, num} = request.body;
 
-  console.log(request.body);
-  
-  pool.query('insert into flag (pid, num) values ($1, $2)', [pid, num], (error, results) => {
+  console.log(request.body)
+
+  pool.query('update flag f set flag +=1 where pid = $1 and uid = $2', [pid, num], (error, results) => {
+    console.log('results', results);
     if (error) {
       console.log('error', error);
-      throw error
+      return response.status(400).json(error);
     }
-    console.log('result', results);
-    return response.status(200).send(`Flag added with ID: ${results}`);
-  })
+    return response.status(200).json(results.rows);
+  });
 };
 
 const deleteOneFlag = (request, response) => {

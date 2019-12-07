@@ -58,7 +58,6 @@ app.get('/comments', db.getComments);
 app.post('/comments', db.createComment);
 
 app.post('/login', user_controller.login);
-//app.put('/flags', db.updateFlags);
 app.get('/flags', db.getFlags);
 app.post('/flags', db.createFlag);
 
