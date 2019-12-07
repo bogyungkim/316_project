@@ -260,7 +260,7 @@ const createPost = (request, response) => {
 };
 
 const deleteOnePost = (request, response) => {
-  const query1 = 'update post set deletedAt = now() WHERE pid = $1 and chid = $2';
+  const query1 = 'update post set deletedAt = now() WHERE pid = $1 and chid = $2 and uid = $3';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -271,8 +271,10 @@ const deleteOnePost = (request, response) => {
   });
 };
 
-const deleteAllPosts = (request, response) => {
-  const query1 = 'update post set deletedAt = now()';
+const deleteAllPosts = (request, response) => { // delete all post along with flagged user
+  const { uid } = request.body;
+
+  const query1 = 'update post set deletedAt = now() where uid = $1';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -283,7 +285,7 @@ const deleteAllPosts = (request, response) => {
   });
 };
 
-// ************************* Comment CRUD *************************** // TODO: finish up comment
+// ************************* Comment CRUD ***************************
 
 const getComments = (request, response) => {
   const query2 = 'select * from comment where deletedAt is null';
@@ -297,8 +299,10 @@ const getComments = (request, response) => {
   });
 };
 
-const updateComments = (request, response) => { //WIP
-  const query1 = 'update comment c set deletedAt = now() from post as p where p.pid = c.pid and p.flag>=3';
+const updateComment = (request, response) => { //update the context of comment
+  const { cid, uid, context } = request.body;
+  const query1 = 'update comment set context = $3 where cid = $1 AND uid = $2'
+
   pool.query(query1, (error, results) => {
     console.log('results', results);
     if (error) {
@@ -324,8 +328,11 @@ const createComment = (request, response) => {
   });
 };
 
-const deleteOneComment = (request, response) => { //WIP
-  const query1 = 'DELETE FROM comment WHERE cid = $1';
+const deleteOneComment = (request, response) => { //delete by the comment owner
+  const { cid, uid } = request.body;
+
+  const query1 = 'update comment set deletedAt = now() where cid = $1 AND uid = $2'
+  
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -355,5 +362,5 @@ export default {
   getUsers, updateUsers, createUser, getOneUserByName, deleteOneUser, deleteAllUsers,
   getChannels, createChannel, deleteOneChannel, deleteAllChannels,
   getPosts, updatePosts, createPost, deleteOnePost, deleteAllPosts, updatePostsUpvote, updatePostsDownvote,
-  getComments, updateComments, createComment, deleteOneComment, deleteAllComments
+  getComments, updateComment, createComment, deleteOneComment, deleteAllComments
 };

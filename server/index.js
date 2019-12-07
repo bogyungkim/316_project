@@ -59,11 +59,10 @@ app.delete('/posts', db.deleteAllPosts);
 app.put('/posts', db.updatePostsUpvote;
 app.put('/posts', db.updatePostsDownvote);
 
-app.put('/comments', db.updateComments);
+app.put('/comments', db.updateComment);
 app.get('/comments', db.getComments);
 app.post('/comments', db.createComment);
-app.delete('/comments', db.deleteOneComment);
-app.delete('/comments', db.deleteAllComments);
+app.patch('/comments', db.deleteOneComment);
 
 app.post('/login', login);
 //app.put('/flags', db.updateFlags);
