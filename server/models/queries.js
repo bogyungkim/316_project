@@ -97,18 +97,6 @@ const getUsers = async (request, response) => {
   }
 };
 
-const updateUsers = (request, response) => {
-  const query1 = 'update users u set deletedAt = now() from post as p where p.uid = u.uid and p.flag>=3'
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-}; // TODO: finish up updateUsers
-
 const createUser = async (request, response) => {
   const { uid, username, phoneNumber, password, clout, deletedAt } = response.req.body;
   let hash;
@@ -152,6 +140,18 @@ const deleteOneUser = (request, response) => {
     return response.status(200).json(results.rows);
   });
 }; //need user name
+
+const deleteFlaggedUser = (request, response) => {
+  const query1 = 'update users u set deletedAt = now() from post as p where p.uid = u.uid and p.flag>=3'
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
 
 const deleteAllUsers = (request, response) => {
   const query1 = 'update user set deletedAt = now()';
@@ -209,19 +209,6 @@ const getPosts = (request, response) => {
   });
 };
 
-const updatePosts = (request, response) => {
-  const query1 = 'update post set deletedAt = now() where flag>=3';
-
-  pool.query(query1, (error, results) => {
-    console.log('results', results);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
 const updatePostsUpvote = (request, response) => {
   pool.query('update post set upVote= upVote+1 where pid = $1 AND chid = $2', [pid, chid], (error, results)=> {
     console.log('results', results);
@@ -259,7 +246,20 @@ const createPost = (request, response) => {
   });
 };
 
-const deleteOnePost = (request, response) => {
+const delteFlaggedPost = (request, response) => { //delete over 3 times flagged post
+  const query1 = 'update post set deletedAt = now() where flag>=3';
+
+  pool.query(query1, (error, results) => {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
+const deleteOnePost = (request, response) => { //delete by the post owner
   const query1 = 'update post set deletedAt = now() WHERE pid = $1 and chid = $2 and uid = $3';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
@@ -359,8 +359,8 @@ const deleteAllComments = (request, response) => { //delete all comment
 
 export default {
   initializer, authenticate,
-  getUsers, updateUsers, createUser, getOneUserByName, deleteOneUser, deleteAllUsers,
+  getUsers, createUser, getOneUserByName, deleteFlaggedUser, deleteOneUser, deleteAllUsers,
   getChannels, createChannel, deleteOneChannel, deleteAllChannels,
-  getPosts, updatePosts, createPost, deleteOnePost, deleteAllPosts, updatePostsUpvote, updatePostsDownvote,
+  getPosts, createPost, deleteFlaggedPost, deleteOnePost, deleteAllPosts, updatePostsUpvote, updatePostsDownvote,
   getComments, updateComment, createComment, deleteOneComment, deleteAllComments
 };
