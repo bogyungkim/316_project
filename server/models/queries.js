@@ -311,7 +311,7 @@ const getComments = (request, response) => {
   });
 };
 
-const updateComments = (request, response) => {
+const updateComments = (request, response) => { //WIP
   const query1 = 'update comment c set deletedAt = now() from post as p where p.pid = c.pid and p.flag>=3';
   pool.query(query1, (error, results) => {
     console.log('results', results);
@@ -338,10 +338,7 @@ const createComment = (request, response) => {
   });
 };
 
-
-// ************************* Flag CRUD *************************** // TODO: finish up Flag
-
-const deleteOneComment = (request, response) => {
+const deleteOneComment = (request, response) => { //WIP
   const query1 = 'DELETE FROM comment WHERE cid = $1';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
@@ -353,18 +350,22 @@ const deleteOneComment = (request, response) => {
   });
 };
 
-const deleteAllComments = (request, response) => {
-  const query1 = 'DELETE FROM comment';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
 
+// ************************* Flag CRUD *************************** // TODO: finish up Flag
+
+const deleteAllComments = (request, response) => { //delete all comments along with flagged post
+  const { pid } = request.body;
+  const query1 = 'update comment set deletedAt = now() where pid = $1'
+
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
 
 export default {
   initializer, authenticate,
