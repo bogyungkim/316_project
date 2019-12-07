@@ -1,6 +1,7 @@
-import {Pool} from 'pg'
-import Helper from '../controller/helper'
+import {Pool} from 'pg';
 import axios from 'axios';
+
+import Helper from '../controller/helper';
 
 const pool = new Pool({
   user: process.env.RDS_USER,
@@ -11,14 +12,23 @@ const pool = new Pool({
 });
 
 const initializer = async (request, response) => {
-  const sql = await axios.get('https://316-project.s3.amazonaws.com/fill.sql');
-  await pool.query(sql.data, (error, result) => {
-    if (error) {
-      return response.status(400).json({ StatusCode: 400, Error: error});
-    } else {
-      return response.status(200).send({ StatusCode: 200 });
-    }
-  });
+  let sql;
+  try {
+    sql = await axios.get(process.env.QUERY_URL);
+  } catch (error) {
+    return response.status(500).json({ statusCode: 500, triggeredAt: 'axios.get()', error: error });
+  }
+  try {
+    await pool.query(sql.data, (error, result) => {
+      if (error) {
+        return response.status(400).json({ statusCode: 400, triggeredAt: 'pool.query()', error: error });
+      } else {
+        return response.status(200).json({ statusCode: 200, result: result });
+      }
+    });
+  } catch (error) {
+      return response.status(500).json({ statusCode: 500, triggeredAt: 'axios.get()', error: error });
+  }
 };
 
 const authenticate = async (id, password) => {
@@ -33,45 +43,58 @@ const authenticate = async (id, password) => {
   }
 };
 
+const checkUser = async (userInfo, type) => {
+    if (userInfo) {
+      return true;
+    } else {
+      throw (`No user with ${type}`);
+    }
+};
+
 const authenticateWithUsername = async (username, password) => {
   const queryText = 'SELECT * FROM users WHERE username = $1';
-  const { rows } = await pool.query(queryText, [username]);
-  const user = rows[0];
-  if(user) {
-    return checkPassword(user, password);
-  } else {
-    return Promise.reject("No user with username " + username);
+  try {
+    const { rows } = await pool.query(queryText, [username]);
+    await checkUser(rows[0], username);
+    return await checkPassword(rows[0], password);
+  } catch (error) {
+    throw error;
   }
 };
 
 const authenticateWithPhoneNumber = async (phoneNumber, password) => {
   const queryText = 'SELECT * FROM users WHERE phoneNumber = $1';
-  const { rows } = await pool.query(queryText, [phoneNumber]);
-  const user = rows[0];
-  if(user) {
-    return checkPassword(user, password);
-  } else {
-    return Promise.reject("No user with phoneNumber " + phoneNumber);
+  try {
+    const { rows } = await pool.query(queryText, [phoneNumber]);
+    await checkUser(rows[0], phoneNumber);
+    return await checkPassword(rows[0], password);
+  } catch (error) {
+    throw error;
   }
 };
 
-const checkPassword = (user, password) => {
-  if(Helper.comparePassword(user.password, password)) {
-    // Optionally, Generate token, store token, return token
-    return Promise.resolve(user.username);
-  } else {
-    return Promise.reject("Password mismatch");
+const checkPassword = async (user, password) => {
+  try {
+    const response = await Helper.comparePassword(user.password, password);
+    console.log('response', response);
+    if (!response) throw ("Incorrect password"); // TODO: find a better way to resolve local throw issue
+    return user.username;
+  } catch (error) {
+    throw error;
   }
 };
 
 // ************************* Users CRUD ***************************
 
-const getUsers = (request, response) => {
-  pool.query('SELECT * FROM users', (error, results) => {
-    if (error) return Promise.reject(error);
-    return response.status(200).json(results.rows);
-    return Promise.resolve(results.rows);
-  });
+const getUsers = async (request, response) => {
+  try {
+    await pool.query('SELECT * FROM users', (error, results) => {
+      if (error) return response.status(400).json({ statusCode: 400, triggeredAt: 'pool.query()', error: error });
+      return response.status(200).json({ statusCode: 200, result: results.rows });
+    });
+  } catch (error) {
+    return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
+  }
 };
 
 const updateUsers = (request, response) => {
@@ -84,25 +107,41 @@ const updateUsers = (request, response) => {
     }
     return response.status(200).json(results.rows);
   });
-}; // WIP
+}; // TODO: finish up updateUsers
 
 const createUser = async (request, response) => {
   const { uid, username, phoneNumber, password, clout, deletedAt } = response.req.body;
-  const hash = await Helper.hashPassword(password);
-  return await pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, result) => {
-    if (error) {
-      return response.status(400).json({ statusCode: 400, error: error});
-    }
-    return response.status(200).json({ statusCode: 200 });
-  });
+  let hash;
+  try {
+    hash = await Helper.hashPassword(password);
+  } catch (error) {
+    return response.status(500).json({ statusCode: 500, triggeredAt: 'Helper.hashPassword()', error: error });
+  }
+
+  try {
+    await pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, result) => {
+      if (error) {
+        return response.status(400).json({ statusCode: 400, triggeredAt: 'pool.query()', error: error });
+      }
+      return response.status(200).json({ statusCode: 200, result: result });
+    });
+  } catch (error) {
+    return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
+  }
 };
 
 const getOneUserByName = async (username) => {
   const queryText = 'SELECT * FROM users WHERE username = $1';
-  const { rows } = await pool.query(queryText, [username]);
-  return rows[0] ? Promise.resolve(rows[0]) : Promise.reject("Can't find user with name " + username);
-}; // WIP
+  try {
+    const { rows } = await pool.query(queryText, [username]);
+    if (!rows[0]) throw (`No user with username ${username}`); // TODO: need to come up with a good code
+    return rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
 
+// ************************* Channel CRUD *************************** // TODO: finish up channel
 const deleteOneUser = (request, response) => {
   const query1 = 'DELETE FROM users WHERE username = $1';
   pool.query(query1, (error, results) => {
@@ -180,10 +219,10 @@ const deleteAllChannels = (request, response) => {
 };
 
 
-// ************************* Post CRUD ***************************
+// ************************* Post CRUD *************************** // TODO: finish up post
 
 const getPosts = (request, response) => {
-  const query2 = 'select * from post where deletedAt is null'
+  const query2 = 'select * from post where deletedAt is null';
 
   pool.query(query2, (error, results) => {
     console.log('results', results);
@@ -196,7 +235,7 @@ const getPosts = (request, response) => {
 };
 
 const updatePosts = (request, response) => {
-  const query1 = 'update post set deletedAt = now() where flag>=3'
+  const query1 = 'update post set deletedAt = now() where flag>=3';
 
   pool.query(query1, (error, results) => {
     console.log('results', results);
@@ -258,7 +297,7 @@ const deleteAllPosts = (request, response) => {
   });
 };
 
-// ************************* Comment CRUD ***************************
+// ************************* Comment CRUD *************************** // TODO: finish up comment
 
 const getComments = (request, response) => {
   const query2 = 'select * from comment where deletedAt is null';
@@ -298,6 +337,9 @@ const createComment = (request, response) => {
     return response.status(200).send(`Comment added with ID: ${results}`);
   });
 };
+
+
+// ************************* Flag CRUD *************************** // TODO: finish up Flag
 
 const deleteOneComment = (request, response) => {
   const query1 = 'DELETE FROM comment WHERE cid = $1';

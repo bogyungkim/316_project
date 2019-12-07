@@ -1,11 +1,10 @@
 import 'dotenv/config';
 import cors from 'cors';
-import axios from 'axios';
 import express from 'express';
 import serverless from 'serverless-http';
 import bodyParser from 'body-parser';
 
-import user_controller from './controller/user_controller';
+import { login } from './controller/user_controller';
 import db from './models/queries';
 
 const app = express();
@@ -64,10 +63,13 @@ app.post('/comments', db.createComment);
 app.delete('/comments', db.deleteOneComment);
 app.delete('/comments', db.deleteAllComments);
 
-app.post('/login', user_controller.login);
+app.post('/login', login);
+//app.put('/flags', db.updateFlags);
+app.get('/flags', db.getFlags);
+app.post('/flags', db.createFlag);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
-app.on('error', (result) => console.log(result));
+app.on('error', (error) => console.error('error', error));
 
 const server = serverless(app);
 export {
