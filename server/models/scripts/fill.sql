@@ -24,7 +24,6 @@ CREATE TABLE post (
   photoUrl VARCHAR(2000) NOT NULL,
   upVote INTEGER NOT NULL,
   downVote INTEGER NOT NULL,
-  flag INTEGER NOT NULL,
   deletedAt TIMESTAMP default NULL,
   PRIMARY KEY (pid, chid),
   UNIQUE(pid)
