@@ -141,9 +141,8 @@ const getOneUserByName = async (username) => {
   }
 };
 
-// ************************* Channel CRUD *************************** // TODO: finish up channel
 const deleteOneUser = (request, response) => {
-  const query1 = 'DELETE FROM users WHERE username = $1';
+  const query1 = 'update user set deletedAt = now() WHERE username = $1';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -155,7 +154,7 @@ const deleteOneUser = (request, response) => {
 }; //need user name and password to delete a user
 
 const deleteAllUsers = (request, response) => {
-  const query1 = 'DELETE FROM users';
+  const query1 = 'update user set deletedAt = now()';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -191,30 +190,6 @@ const createChannel = (request, response) => {
     }
     console.log('result', results);
     return response.status(200).send(`Channel added with ID: ${results}`);
-  });
-};
-
-const deleteOneChannel = (request, response) => {
-  const query1 = 'DELETE FROM channel WHERE cname = $1';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
-const deleteAllChannels = (request, response) => {
-  const query1 = 'DELETE FROM channel';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
   });
 };
 
@@ -274,7 +249,7 @@ const createPost = (request, response) => {
 };
 
 const deleteOnePost = (request, response) => {
-  const query1 = 'DELETE FROM post WHERE pid = $1 and chid = $2';
+  const query1 = 'update post set deletedAt = now() WHERE pid = $1 and chid = $2';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -286,7 +261,7 @@ const deleteOnePost = (request, response) => {
 };
 
 const deleteAllPosts = (request, response) => {
-  const query1 = 'DELETE FROM post';
+  const query1 = 'update post set deletedAt = now()';
   pool.query(query1, (error, results) => {
     console.log('results', results.rows);
     if (error) {
@@ -349,9 +324,6 @@ const deleteOneComment = (request, response) => { //WIP
     return response.status(200).json(results.rows);
   });
 };
-
-
-// ************************* Flag CRUD *************************** // TODO: finish up Flag
 
 const deleteAllComments = (request, response) => { //delete all comments along with flagged post
   const { pid } = request.body;
