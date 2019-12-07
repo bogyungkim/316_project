@@ -151,7 +151,7 @@ const deleteOneUser = (request, response) => {
     }
     return response.status(200).json(results.rows);
   });
-}; //need user name and password to delete a user
+}; //need user name
 
 const deleteAllUsers = (request, response) => {
   const query1 = 'update user set deletedAt = now()';
@@ -223,13 +223,24 @@ const updatePosts = (request, response) => {
 };
 
 const updatePostsUpvote = (request, response) => {
-  pool.query('update flag f set flag +=1 where pid = $1 and uid = $2', [pid, num], (error, results)=> {
+  pool.query('update post set upVote= upVote+1 where pid = $1 AND chid = $2', [pid, chid], (error, results)=> {
     console.log('results', results);
     if (error) {
       console.log('error', error);
       return response.status(400).json(error);
     }
-    return response.status(200).send(`upVote added with ID: ${results}`);
+    return response.status(200).send(`upVote updated with ID: ${results}`);
+  });
+};
+
+const updatePostsDownvote = (request, response) => {
+  pool.query('update post set downVote= downVote+1 where pid = $1 AND chid = $2', [pid, chid], (error, results)=> {
+    console.log('results', results);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).send(`downVote updated with ID: ${results}`);
   });
 };
 
@@ -343,6 +354,6 @@ export default {
   initializer, authenticate,
   getUsers, updateUsers, createUser, getOneUserByName, deleteOneUser, deleteAllUsers,
   getChannels, createChannel, deleteOneChannel, deleteAllChannels,
-  getPosts, updatePosts, createPost, deleteOnePost, deleteAllPosts,
+  getPosts, updatePosts, createPost, deleteOnePost, deleteAllPosts, updatePostsUpvote, updatePostsDownvote,
   getComments, updateComments, createComment, deleteOneComment, deleteAllComments
 };

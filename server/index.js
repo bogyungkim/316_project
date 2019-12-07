@@ -56,6 +56,8 @@ app.get('/posts', db.getPosts);
 app.post('/posts', db.createPost);
 app.delete('/posts', db.deleteOnePost);
 app.delete('/posts', db.deleteAllPosts);
+app.put('/posts', db.updatePostsUpvote;
+app.put('/posts', db.updatePostsDownvote);
 
 app.put('/comments', db.updateComments);
 app.get('/comments', db.getComments);
