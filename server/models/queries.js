@@ -324,65 +324,10 @@ const deleteAllComments = (request, response) => {
 };
 
 
-// ************************* Flag CRUD ***************************
-
-const getFlags = (request, response) => {
-  pool.query('SELECT * FROM flag', (error, results) => {
-    console.log('results', results);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
-const createFlag = (request, response) => {
-  const {pid, num} = request.body;
-
-  console.log(request.body)
-
-  pool.query('update flag f set flag +=1 where pid = $1 and uid = $2', [pid, num], (error, results)=> {
-    console.log('results', results);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).send(`Flag added with ID: ${results}`);
-  });
-};
-
-
-
-const deleteOneFlag = (request, response) => {
-  const query1 = 'DELETE FROM flag WHERE pid = $1';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
-const deleteAllFlags = (request, response) => {
-  const query1 = 'DELETE FROM flag';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
 export default {
   initializer, authenticate,
   getUsers, updateUsers, createUser, getOneUserByName, deleteOneUser, deleteAllUsers,
   getChannels, createChannel, deleteOneChannel, deleteAllChannels,
   getPosts, updatePosts, createPost, deleteOnePost, deleteAllPosts,
-  getComments, updateComments, createComment, deleteOneComment, deleteAllComments,
-  getFlags, createFlag, deleteOneFlag, deleteAllFlags//,updateFlag 
+  getComments, updateComments, createComment, deleteOneComment, deleteAllComments
 };

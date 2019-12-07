@@ -65,10 +65,6 @@ app.delete('/comments', db.deleteOneComment);
 app.delete('/comments', db.deleteAllComments);
 
 app.post('/login', user_controller.login);
-app.get('/flags', db.getFlags);
-app.post('/flags', db.createFlag);
-app.delete('/flags', db.deleteOneFlag);
-app.delete('/flags', db.deleteAllFlags);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
 app.on('error', (result) => console.log(result));
