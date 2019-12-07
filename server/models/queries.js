@@ -331,15 +331,17 @@ const createFlag = (request, response) => {
 
   console.log(request.body)
 
-  pool.query('update flag f set flag +=1 where pid = $1 and uid = $2', [pid, num], (error, results) => {
+  pool.query('update flag f set flag +=1 where pid = $1 and uid = $2', [pid, num], (error, results)=> {
     console.log('results', results);
     if (error) {
       console.log('error', error);
       return response.status(400).json(error);
     }
-    return response.status(200).json(results.rows);
+    return response.status(200).send(`Flag added with ID: ${results}`);
   });
 };
+
+
 
 const deleteOneFlag = (request, response) => {
   const query1 = 'DELETE FROM flag WHERE pid = $1';
