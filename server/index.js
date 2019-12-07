@@ -44,6 +44,7 @@ app.post('/initializer', db.initializer);
 // app.put('/users', db.updateUsers);
 app.get('/users', db.getUsers);
 app.post('/users', db.createUser);
+app.delete('/users', db.deleteOneUser);
 
 app.get('/channels', db.getChannels);
 app.post('/channels', db.createChannel);

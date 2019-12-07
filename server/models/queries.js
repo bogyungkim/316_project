@@ -103,6 +103,30 @@ const getOneUserByName = async (username) => {
   return rows[0] ? Promise.resolve(rows[0]) : Promise.reject("Can't find user with name " + username);
 }; // WIP
 
+const deleteOneUser = (request, response) => {
+  const query1 = 'DELETE FROM users WHERE username = $1';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+}; //need user name and password to delete a user
+
+const deleteAllUsers = (request, response) => {
+  const query1 = 'DELETE FROM users';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
 // ************************* Channel CRUD ***************************
 
 const getChannels = (request, response) => {
@@ -128,6 +152,30 @@ const createChannel = (request, response) => {
     }
     console.log('result', results);
     return response.status(200).send(`Channel added with ID: ${results}`);
+  });
+};
+
+const deleteOneChannel = (request, response) => {
+  const query1 = 'DELETE FROM channel WHERE cname = $1';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
+const deleteAllChannels = (request, response) => {
+  const query1 = 'DELETE FROM channel';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -175,6 +223,30 @@ const createPost = (request, response) => {
   });
 };
 
+const deleteOnePost = (request, response) => {
+  const query1 = 'DELETE FROM post WHERE pid = $1 and chid = $2';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
+const deleteAllPosts = (request, response) => {
+  const query1 = 'DELETE FROM post';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
 // ************************* Comment CRUD ***************************
 
 const getComments = (request, response) => {
@@ -213,6 +285,30 @@ const createComment = (request, response) => {
     }
     console.log('result', results);
     return response.status(200).send(`Channel added with ID: ${results}`);
+  });
+};
+
+const deleteOneComment = (request, response) => {
+  const query1 = 'DELETE FROM comment WHERE cid = $1';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
+const deleteAllComments = (request, response) => {
+  const query1 = 'DELETE FROM comment';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -256,11 +352,35 @@ const createFlag = (request, response) => {
   })
 };
 
+const deleteOneFlag = (request, response) => {
+  const query1 = 'DELETE FROM flag WHERE pid = $1';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
+const deleteAllFlags = (request, response) => {
+  const query1 = 'DELETE FROM flag';
+  pool.query(query1, (error, results) => {
+    console.log('results', results.rows);
+    if (error) {
+      console.log('error', error);
+      return response.status(400).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+};
+
 export default {
   initializer, authenticate,
-  getUsers, updateUsers, createUser, getOneUserByName,
-  getChannels, createChannel,
-  getPosts, updatePosts, createPost,
-  getComments, updateComments, createComment,
-  getFlags, createFlag, //,updateFlag
+  getUsers, updateUsers, createUser, getOneUserByName, deleteOneUser, deleteAllUsers,
+  getChannels, createChannel, deleteOneChannel, deleteAllChannels,
+  getPosts, updatePosts, createPost, deleteOnePost, deleteAllPosts,
+  getComments, updateComments, createComment, deleteOneComment, deleteAllComments,
+  getFlags, createFlag, deleteOneFlag, deleteAllFlags//,updateFlag 
 };
