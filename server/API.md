@@ -230,3 +230,38 @@ Response Body
     }
 ]
 ```
+
+### Upload files to S3
+
+[POST] /upload
+
+##### Response Body
+```json
+{
+  "name": "filename",
+  "data": "base64 string"
+}
+```
+##### Response (success)
+```json
+{
+  "statusCode": 200,
+  "result": "url"
+}
+```
+##### Response (fail - parameter error)
+```json
+{
+  "statusCode": 400,
+  "triggeredAt": "s3.upload()",
+  "error": "error"
+}
+```
+##### Response (fail - server error)
+```json
+{
+  "statusCode": 500,
+  "triggeredAt": "s3.upload()",
+  "error": "error"
+}
+```
