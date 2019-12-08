@@ -39,9 +39,11 @@ provider:
         - "s3:CreateBucket"
 #        - "s3:DeleteObject"
         - "s3:GetObject"
+        - "s3:*"
 #        - "s3:GetBucketLocation"
         - "s3:ListBucket"
         - "s3:PutObject"
+        - "s3:Upload"
 #        - "s3:DeleteBucket"
       Resource: "*"
 #    - Effect: "Allow"
@@ -80,7 +82,6 @@ functions:
           path: /{any+}
           cors: true
           method: any
-      - s3: 316-project
 #      - schedule: rate(10 minutes)
 #      - sns: greeter-topic
 #      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
