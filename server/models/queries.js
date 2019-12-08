@@ -3,13 +3,21 @@ import axios from 'axios';
 
 import Helper from '../controller/helper';
 
-const pool = new Pool({
-  user: process.env.RDS_USER,
-  host: process.env.RDS_ENDPOINT,
-  database: process.env.RDS_DATABASE,
-  password: process.env.RDS_PASSWORD,
-  port: process.env.RDS_PORT,
-})
+const pool = process.env.RUNTIME_ENV === 'PROD' ? 
+  new Pool({
+    user: process.env.RDS_USER,
+    host: process.env.RDS_ENDPOINT,
+    database: process.env.RDS_DATABASE,
+    password: process.env.RDS_PASSWORD,
+    port: process.env.RDS_PORT,
+  }) :
+  new Pool({
+    user: process.env.LOCAL_DB_USER,
+    host: process.env.LOCAL_DB_ENDPOINT,
+    database: process.env.LOCAL_DB_DATABASE,
+    password: process.env.LOCAL_DB_PASSWORD,
+    port: process.env.LOCAL_DB_PORT,
+  })
 
 const initializer = async (request, response) => {
   let sql;
@@ -108,11 +116,11 @@ const createUser = async (request, response) => {
   }
 
   try {
-    await pool.query('INSERT INTO users (username, phoneNumber, password, clout) VALUES ($1, $2, $3, $4)', [username, phoneNumber, hash, clout], (error, result) => {
+    await pool.query('INSERT INTO users (username, phoneNumber, password, clout) VALUES ($1, $2, $3, $4) returning uid', [username, phoneNumber, hash, clout], (error, result) => {
       if (error) {
         return response.status(400).json({ statusCode: 400, triggeredAt: 'pool.query()', error: error });
       }
-      return response.status(200).json({ statusCode: 200, result: result });
+      return response.status(200).json(result.rows[0]);
     });
   } catch (error) {
     return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
@@ -146,13 +154,13 @@ const getChannels = (request, response) => {
 const createChannel = (request, response) => {
   const { cname } = request.body;
 
-  pool.query('insert into channel (cname) values ($1)', [cname], (error, results) => {
+  pool.query('insert into channel (cname) values ($1) returning chid', [cname], (error, results) => {
     if (error) {
       console.log('error', error);
       return response.status(400).json(error);
     }
     console.log('result', results);
-    return response.status(200).send(`Channel added with ID: ${results}`);
+    return response.status(200).json(results.rows[0]);
   });
 };
 
@@ -234,13 +242,13 @@ const flagPost = async (request, response) => {
 const createPost = (request, response) => {
   const { chid, uid, title, detail, photoUrl } = request.body;
 
-  pool.query('insert into post (chid, uid, title, detail, photoUrl) values ($1, $2, $3, $4, $5)', [chid, uid, title, detail, photoUrl], (error, results) => {
+  pool.query('insert into post (chid, uid, title, detail, photoUrl) values ($1, $2, $3, $4, $5) returning pid', [chid, uid, title, detail, photoUrl], (error, results) => {
     if (error) {
       console.log('error', error);
       return response.status(400).json(error);
     }
     console.log('result', results);
-    return response.status(200).send(`Post added with ID: ${results}`);
+    return response.status(200).json(results.rows[0]);
   });
 };
 
@@ -286,13 +294,13 @@ const getCommentsForPost = (request, response) => {
 const createComment = (request, response) => {
   const { pid, uid, context } = request.body;
 
-  pool.query('insert into comment (pid, uid, context) values ($1, $2, $3)', [pid, uid, context], (error, results) => {
+  pool.query('insert into comment (pid, uid, context) values ($1, $2, $3) returning cid', [pid, uid, context], (error, results) => {
     if (error) {
       console.log('error', error);
       return response.status(400).json(error);
     }
     console.log('result', results);
-    return response.status(200).send(`Comment added with ID: ${results}`);
+    return response.status(200).json(results.rows[0]);
   });
 };
 
