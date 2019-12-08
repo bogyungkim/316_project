@@ -5,6 +5,7 @@ import serverless from 'serverless-http';
 import bodyParser from 'body-parser';
 
 import { login } from './controller/user_controller';
+import upload from './controller/upload_controller';
 import db from './models/queries';
 
 const app = express();
@@ -40,6 +41,7 @@ app.post('/', async (req, res, next) => {
 
 app.post('/initializer', db.initializer);
 app.post('/login', login);
+app.post('/upload', upload);
 
 // app.put('/users', db.updateUsers);
 app.get('/users/:uid', db.getUser);

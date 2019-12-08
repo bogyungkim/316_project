@@ -1,4 +1,4 @@
-drop table if exists comment, post, channel, users;
+drop table if exists comment, post, channel, users cascade;
 
 CREATE TABLE users (
   uid SERIAL PRIMARY KEY,
