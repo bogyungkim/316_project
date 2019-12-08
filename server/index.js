@@ -52,14 +52,14 @@ app.get('/posts/:chid', db.getPostsForChannel);
 app.post('/posts', db.createPost);
 app.post('/posts/:pid/upvote', db.updatePostsUpvote);
 app.post('/posts/:pid/downvote', db.updatePostsDownvote);
-app.post('/posts/:pid/flag', db.flagPost)
+app.post('/posts/:pid/flag', db.flagPost);
 app.delete('/posts/:pid/:uid', db.deleteOnePost);
 
 app.get('/comments/:pid', db.getCommentsForPost);
 app.post('/comments', db.createComment);
 app.delete('/comments/:cid/:uid', db.deleteOneComment);
 
-app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
+app.listen(process.env.PORT, () => console.log(`APP PORT ${process.env.PORT}`));
 app.on('error', (error) => console.error('error', error));
 
 const server = serverless(app);
