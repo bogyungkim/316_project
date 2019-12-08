@@ -9,7 +9,7 @@ const pool = new Pool({
   database: process.env.RDS_DATABASE,
   password: process.env.RDS_PASSWORD,
   port: process.env.RDS_PORT,
-});
+})
 
 const initializer = async (request, response) => {
   let sql;
@@ -86,19 +86,20 @@ const checkPassword = async (user, password) => {
 
 // ************************* Users CRUD ***************************
 
-const getUsers = async (request, response) => {
+const getUser = async (request, response) => {
+  const { uid } = request.params;
+
   try {
-    await pool.query('SELECT * FROM users', (error, results) => {
-      if (error) return response.status(400).json({ statusCode: 400, triggeredAt: 'pool.query()', error: error });
-      return response.status(200).json({ statusCode: 200, result: results.rows });
-    });
+    const user = (await pool.query('SELECT * FROM users WHERE uid = $1 and deletedAt is null', [uid])).rows[0]
+    if(user) response.status(200).json(user);
+    else response.status(400).json(`No user with uid = ${uid}`);
   } catch (error) {
     return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
   }
 };
 
 const createUser = async (request, response) => {
-  const { uid, username, phoneNumber, password, clout, deletedAt } = response.req.body;
+  const { username, phoneNumber, password, clout } = request.body;
   let hash;
   try {
     hash = await Helper.hashPassword(password);
@@ -107,7 +108,7 @@ const createUser = async (request, response) => {
   }
 
   try {
-    await pool.query('INSERT INTO users (uid, username, phoneNumber, password, clout, deletedAt) VALUES ($1, $2, $3, $4, $5, $6)', [uid, username, phoneNumber, hash, clout, deletedAt], (error, result) => {
+    await pool.query('INSERT INTO users (username, phoneNumber, password, clout) VALUES ($1, $2, $3, $4)', [username, phoneNumber, hash, clout], (error, result) => {
       if (error) {
         return response.status(400).json({ statusCode: 400, triggeredAt: 'pool.query()', error: error });
       }
@@ -129,42 +130,6 @@ const getOneUserByName = async (username) => {
   }
 };
 
-const deleteOneUser = (request, response) => {
-  const query1 = 'update user set deletedAt = now() WHERE username = $1';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-}; //need user name
-
-const deleteFlaggedUser = (request, response) => {
-  const query1 = 'update users u set deletedAt = now() from post as p where p.uid = u.uid and p.flag>=3'
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
-const deleteAllUsers = (request, response) => {
-  const query1 = 'update user set deletedAt = now()';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
 // ************************* Channel CRUD ***************************
 
 const getChannels = (request, response) => {
@@ -179,14 +144,12 @@ const getChannels = (request, response) => {
 };
 
 const createChannel = (request, response) => {
-  const { chid, cname } = request.body;
+  const { cname } = request.body;
 
-  console.log(request.body);
-
-  pool.query('insert into channel (chid, cname) values ($1, $2)', [chid, cname], (error, results) => {
+  pool.query('insert into channel (cname) values ($1)', [cname], (error, results) => {
     if (error) {
       console.log('error', error);
-      throw error;
+      return response.status(400).json(error);
     }
     console.log('result', results);
     return response.status(200).send(`Channel added with ID: ${results}`);
@@ -196,10 +159,12 @@ const createChannel = (request, response) => {
 
 // ************************* Post CRUD *************************** // TODO: finish up post
 
-const getPosts = (request, response) => {
-  const query2 = 'select * from post where deletedAt is null';
+const getPostsForChannel = (request, response) => {
+  const { chid } = request.params;
 
-  pool.query(query2, (error, results) => {
+  const query2 = 'select * from post where deletedAt is null AND chid = $1';
+
+  pool.query(query2, [chid], (error, results) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
@@ -209,87 +174,92 @@ const getPosts = (request, response) => {
   });
 };
 
-const updatePostsUpvote = (request, response) => {
-  pool.query('update post set upVote= upVote+1 where pid = $1 AND chid = $2', [pid, chid], (error, results)=> {
-    console.log('results', results);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).send(`upVote updated with ID: ${results}`);
-  });
+const updatePostsUpvote = async (request, response) => {
+  const { pid } = request.params;
+
+  try {
+    const updated = (await pool.query('update post set upVote=upVote+1 where pid = $1 returning upVote', [pid])).rows[0];
+    if(updated) response.status(200).json({ newUpVote: updated.upVote });
+    else response.status(400).send(`post with ${pid} doesn't exist`);
+  } catch(e) {
+    response.status(400).json(e);
+  }
 };
 
-const updatePostsDownvote = (request, response) => {
-  pool.query('update post set downVote= downVote+1 where pid = $1 AND chid = $2', [pid, chid], (error, results)=> {
-    console.log('results', results);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).send(`downVote updated with ID: ${results}`);
-  });
+const updatePostsDownvote = async (request, response) => {
+  const { pid } = request.params;
+
+  try {
+    const updated = (await pool.query('update post set downVote=downVote+1 where pid = $1 returning downVote', [pid])).rows[0];
+    if(updated) response.status(200).json({ newDownVote: updated.downVote });
+    else response.status(400).send(`post with ${pid} doesn't exist`);
+  } catch(e) {
+    response.status(400).json(e);
+  }
 };
+
+const flagPost = async (request, response) => {
+  const { pid } = request.params;
+
+  try {
+    const updatedRows = await pool.query('update post set flag=flag+1 where pid = $1 RETURNING *', [pid]);
+    const toDelete = updatedRows.rows[0];
+
+    if(!toDelete) return response.status(400).send(`post with ${pid} doesn't exist`);
+    
+    if(toDelete.flag >= 3) {
+      const authorID = toDelete.uid;
+
+      console.log("delete ", authorID);
+
+      const deleteUser = 'update users set deletedAt = now() WHERE uid = $1';
+      const deletePosts = 'update post set deletedAt = now() WHERE uid = $1';
+      const deleteComments = 'update comment set deletedAt = now() where uid = $1';
+
+      await Promise.all([
+        pool.query(deleteUser, [authorID]),
+        pool.query(deletePosts, [authorID]),
+        pool.query(deleteComments, [authorID]),
+      ]);
+
+      response.status(200).json({ newFlag: toDelete.flag, banned: true });
+    } else {
+      response.status(200).json({ newFlag: toDelete.flag, banned: false });
+    }
+  } catch(error) {
+    response.status(400).json(error);
+  }
+}
 
 const createPost = (request, response) => {
-  const { pid, chid, uid, title, detail, photoUrl, upVote, downVote, flag, deletedAt } = request.body;
+  const { chid, uid, title, detail, photoUrl } = request.body;
 
-  console.log(request.body);
-
-  pool.query('insert into post (pid, chid, uid, title, detail, photoUrl, upVote, downVote, flag, deletedAt) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [pid, chid, uid, title, detail, photoUrl, upVote, downVote, flag, deletedAt], (error, results) => {
+  pool.query('insert into post (chid, uid, title, detail, photoUrl) values ($1, $2, $3, $4, $5)', [chid, uid, title, detail, photoUrl], (error, results) => {
     if (error) {
       console.log('error', error);
-      throw error;
+      return response.status(400).json(error);
     }
     console.log('result', results);
     return response.status(200).send(`Post added with ID: ${results}`);
   });
 };
 
-const delteFlaggedPost = (request, response) => { //delete over 3 times flagged post
-  const query1 = 'update post set deletedAt = now() where flag>=3';
-
-  pool.query(query1, (error, results) => {
-    console.log('results', results);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
-const deleteOnePost = (request, response) => { //delete by the post owner
-  const query1 = 'update post set deletedAt = now() WHERE pid = $1 and chid = $2 and uid = $3';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
-const deleteAllPosts = (request, response) => { // delete all post along with flagged user
-  const { uid } = request.body;
-
-  const query1 = 'update post set deletedAt = now() where uid = $1';
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
+const deleteOnePost = async (request, response) => {
+  const { pid, uid } = request.params;
+  try {
+    await pool.query('update post set deletedAt = now() WHERE pid = $1 and uid = $2', [pid, uid]);
+    response.status(200).send(`delete on ${pid} success`)
+  } catch(e) {
+    response.status(400).json(e);
+  }
 };
 
 // ************************* Comment CRUD ***************************
 
-const getComments = (request, response) => {
-  const query2 = 'select * from comment where deletedAt is null';
-  pool.query(query2, (error, results) => {
+const getCommentsForPost = (request, response) => {
+  const { pid } = request.params;
+  const query2 = 'select * from comment where deletedAt is null AND pid = $1';
+  pool.query(query2, [pid], (error, results) => {
     console.log('results', results);
     if (error) {
       console.log('error', error);
@@ -299,68 +269,48 @@ const getComments = (request, response) => {
   });
 };
 
-const updateComment = (request, response) => { //update the context of comment
-  const { cid, uid, context } = request.body;
-  const query1 = 'update comment set context = $3 where cid = $1 AND uid = $2'
+// const updateComment = (request, response) => { //update the context of comment
+//   const { cid, uid, context } = request.body;
+//   const query1 = 'update comment set context = $3 where cid = $1 AND uid = $2'
 
-  pool.query(query1, (error, results) => {
-    console.log('results', results);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
+//   pool.query(query1, (error, results) => {
+//     console.log('results', results);
+//     if (error) {
+//       console.log('error', error);
+//       return response.status(400).json(error);
+//     }
+//     return response.status(200).json(results.rows);
+//   });
+// };
 
 const createComment = (request, response) => {
-  const { cid, uid, context, deletedAt } = request.body;
+  const { pid, uid, context } = request.body;
 
-  console.log(request.body);
-
-  pool.query('insert into comment (cid, uid, context, deletedAt) values ($1, $2, $3, $4)', [cid, uid, context, deletedAt], (error, results) => {
+  pool.query('insert into comment (pid, uid, context) values ($1, $2, $3)', [pid, uid, context], (error, results) => {
     if (error) {
       console.log('error', error);
-      throw error;
+      return response.status(400).json(error);
     }
     console.log('result', results);
     return response.status(200).send(`Comment added with ID: ${results}`);
   });
 };
 
-const deleteOneComment = (request, response) => { //delete by the comment owner
+const deleteOneComment = async (request, response) => { //delete by the comment owner
   const { cid, uid } = request.body;
 
-  const query1 = 'update comment set deletedAt = now() where cid = $1 AND uid = $2'
-  
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
-};
-
-const deleteAllComments = (request, response) => { //delete all comments along with flagged post
-  const { pid } = request.body;
-  const query1 = 'update comment set deletedAt = now() where pid = $1'
-
-  pool.query(query1, (error, results) => {
-    console.log('results', results.rows);
-    if (error) {
-      console.log('error', error);
-      return response.status(400).json(error);
-    }
-    return response.status(200).json(results.rows);
-  });
+  try {
+    await pool.query('update comment set deletedAt = now() where cid = $1 AND uid = $2', [cid, uid]);
+    response.status(200).send(`delete on ${cid} success`)
+  } catch(e) {
+    response.status(400).json(e);
+  }
 };
 
 export default {
   initializer, authenticate,
-  getUsers, createUser, getOneUserByName, deleteFlaggedUser, deleteOneUser, deleteAllUsers,
-  getChannels, createChannel, deleteOneChannel, deleteAllChannels,
-  getPosts, createPost, deleteFlaggedPost, deleteOnePost, deleteAllPosts, updatePostsUpvote, updatePostsDownvote,
-  getComments, updateComment, createComment, deleteOneComment, deleteAllComments
+  getUser, createUser, getOneUserByName,
+  getChannels, createChannel,
+  getPostsForChannel, createPost, deleteOnePost, updatePostsUpvote, updatePostsDownvote, flagPost,
+  getCommentsForPost, createComment, deleteOneComment
 };

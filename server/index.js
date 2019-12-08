@@ -39,35 +39,25 @@ app.post('/', async (req, res, next) => {
 });
 
 app.post('/initializer', db.initializer);
+app.post('/login', login);
 
 // app.put('/users', db.updateUsers);
-app.get('/users', db.getUsers);
+app.get('/users/:uid', db.getUser);
 app.post('/users', db.createUser);
-app.delete('/users', db.deleteOneUser);
-app.delete('/users', db.deleteAllUsers);
 
 app.get('/channels', db.getChannels);
 app.post('/channels', db.createChannel);
-app.delete('/channels', db.deleteOneChanel);
-app.delete('/channels', db.deleteAllChannels);
 
-app.put('/posts', db.updatePosts);
-app.get('/posts', db.getPosts);
+app.get('/posts/:chid', db.getPostsForChannel);
 app.post('/posts', db.createPost);
-app.delete('/posts', db.deleteOnePost);
-app.delete('/posts', db.deleteAllPosts);
-app.put('/posts', db.updatePostsUpvote;
-app.put('/posts', db.updatePostsDownvote);
+app.post('/posts/:pid/upvote', db.updatePostsUpvote);
+app.post('/posts/:pid/downvote', db.updatePostsDownvote);
+app.post('/posts/:pid/flag', db.flagPost)
+app.delete('/posts/:pid/:uid', db.deleteOnePost);
 
-app.put('/comments', db.updateComment);
-app.get('/comments', db.getComments);
+app.get('/comments/:pid', db.getCommentsForPost);
 app.post('/comments', db.createComment);
-app.patch('/comments', db.deleteOneComment);
-
-app.post('/login', login);
-//app.put('/flags', db.updateFlags);
-app.get('/flags', db.getFlags);
-app.post('/flags', db.createFlag);
+app.delete('/comments/:cid/:uid', db.deleteOneComment);
 
 app.listen(process.env.PORT, () => console.log(`app port ${process.env.PORT}`));
 app.on('error', (error) => console.error('error', error));

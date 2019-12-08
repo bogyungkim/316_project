@@ -10,10 +10,10 @@ const login = async (request, response) => {
     try {
       const username = await db.authenticate(id, password);
       const user = await db.getOneUserByName(username);
-      return response.status(200).json({ statusCode: 200, result: user });
+      return response.status(200).json(user);
     } catch (error) {
       console.log('user_controller error', error);
-      return response.status(400).json({ statusCode: 400, error: error });
+      return response.status(400).json(error);
     }
   };
 
