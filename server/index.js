@@ -52,9 +52,9 @@ app.post('/channels', db.createChannel);
 
 app.get('/posts/:chid', db.getPostsForChannel);
 app.post('/posts', db.createPost);
-app.post('/posts/:pid/upvote', db.updatePostsUpvote);
-app.post('/posts/:pid/downvote', db.updatePostsDownvote);
-app.post('/posts/:pid/flag', db.flagPost);
+app.post('/posts/:pid/upvote/:uid', db.togglePostsUpvote);
+app.post('/posts/:pid/downvote/:uid', db.togglePostsDownvote);
+app.post('/posts/:pid/flag/:uid', db.toggleFlagPost);
 app.delete('/posts/:pid/:uid', db.deleteOnePost);
 
 app.get('/comments/:pid', db.getCommentsForPost);

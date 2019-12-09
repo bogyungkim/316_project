@@ -3,6 +3,8 @@ import axios from 'axios';
 
 import Helper from '../controller/helper';
 
+console.log("RUNTIME_ENV: ", process.env.RUNTIME_ENV);
+
 const pool = process.env.RUNTIME_ENV === 'PROD' ?
   new Pool({
     user: process.env.RDS_USER,
@@ -170,71 +172,122 @@ const createChannel = async (request, response) => {
 
 const getPostsForChannel = async (request, response) => {
   const { chid } = request.params;
+
   try {
-    const query = 'select * from post where deletedAt is null AND chid = $1';
-    await pool.query(query, [chid], (error, results) => {
-      if (error) return response.status(400).json({ statusCode: 400, triggeredAt: 'pool.query()', error: error });
-      return response.status(200).json({ statusCode: 200, result: results.rows });
-    });
+    const getPosts = 'select * from post where deletedAt is null AND chid = $1';
+    const posts = (await pool.query(getPosts, [chid])).rows;
+    const pids = posts.map(post => post.pid);
+
+    const getVotes = `select * from votes where pid in (${pids.join(', ')})`;
+    const getFlags = `select * from flags where pid in (${pids.join(', ')})`;
+    const [votes, flags] = await Promise.all([
+      pool.query(getVotes, []).then(results => results.rows),
+      pool.query(getFlags, []).then(results => results.rows),
+    ]);
+
+    const finalPosts = posts.map(post => 
+      Object.assign(
+        post, 
+        { upVotes: votes.filter(v => v.pid == post.pid && v.isupvote ).map(v => v.uid) },
+        { downVotes: votes.filter(v => v.pid == post.pid && !v.isupvote ).map(v => v.uid) },
+        { flags: flags.filter(f => f.pid == post.pid ).map(f => f.uid) }
+      )
+    )
+
+    return response.status(200).json({ statusCode: 200, results: finalPosts });
   } catch (error) {
+    console.log(error)
     return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
   }
 };
 
-const updatePostsUpvote = async (request, response) => {
-  const { pid } = request.params;
+const togglePostsUpvote = async (request, response) => {
+  const { uid, pid } = request.params;
 
   try {
-    const query = 'update post set upVote=upVote+1 where pid = $1 returning upVote';
-    const res = await pool.query(query, [pid]);
-    const updated = res.rows[0];
-    if (updated) response.status(200).json({ statusCode: 200, result: updated });
-    else response.status(400).send({ statusCode: 400, triggeredAt: 'pool.query()', error: `post with ${pid} doesn't exist` });
-  } catch (error) {
-    return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
-  }
-};
+    const query = 'select * from votes where uid = $1 and pid = $2';
+    const res = (await pool.query(query, [uid, pid])).rows[0];
 
-const updatePostsDownvote = async (request, response) => {
-  const {pid} = request.params;
-  try {
-    const query = 'update post set downVote=downVote+1 where pid = $1 returning downVote';
-    const res = await pool.query(query, [pid]);
-    const updated = res.rows[0];
-    if (updated) response.status(200).json({statusCode: 200, result: updated });
-    else response.status(400).send({
-      statusCode: 400,
-      triggeredAt: 'pool.query()',
-      error: `post with ${pid} doesn't exist`
-    });
-  } catch (error) {
-    return response.status(500).json({statusCode: 500, triggeredAt: 'pool.query()', error: error});
-  }
-};
-
-const flagPost = async (request, response) => {
-  const { pid } = request.params;
-
-  try {
-    const update = 'update post set flag=flag+1 where pid = $1 RETURNING *';
-    const updatedRows = await pool.query(update, [pid]);
-    const toDelete = updatedRows.rows[0];
-
-    if (!toDelete) return response.status(400).json({ statusCode: 400, triggeredAt: 'toDelete', error: `post with ${pid} doesn't exist` });
-    if (toDelete.flag >= 3) {
-      const authorID = toDelete.uid;
-      const deleteUser = 'update users set deletedAt = now() WHERE uid = $1';
-      const deletePosts = 'update post set deletedAt = now() WHERE uid = $1';
-      const deleteComments = 'update comment set deletedAt = now() where uid = $1';
-
-      await Promise.all([
-        pool.query(deleteUser, [authorID]),
-        pool.query(deletePosts, [authorID]),
-        pool.query(deleteComments, [authorID]),
-      ]);
-      return response.status(200).json({ statusCode: 200, result: { newFlag: toDelete.flag, banned: true } });
+    if(res) {
+      if(res.isupvote) {
+        const deleteQ = 'delete from votes where vid = $1';
+        await pool.query(deleteQ, [res.vid]);
+        return response.status(200).json({ statusCode: 200, result: { isUpVote: false, isDownVote: false }})
+      } else {
+        const updateQ = 'update votes set isUpVote = $1 where vid = $2';
+        await pool.query(updateQ, [true, res.vid]);
+        return response.status(200).json({ statusCode: 200, result: { isUpVote: true, isDownVote: false }})
+      }
     } else {
-      return response.status(200).json({ statusCode: 200, result: { newFlag: toDelete.flag, banned: false } });
+      const insertQ = 'insert into votes (uid, pid, isUpVote) values ($1, $2, $3)';
+      await pool.query(insertQ, [uid, pid, true]);
+      return response.status(200).json({ statusCode: 200, result: { isUpVote: true, isDownVote: false }})
+    }
+  } catch (error) {
+    return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
+  }
+};
+
+const togglePostsDownvote = async (request, response) => {
+  const { uid, pid } = request.params;
+
+  try {
+    const query = 'select * from votes where uid = $1 and pid = $2 ';
+    const res = (await pool.query(query, [uid, pid])).rows[0];
+    if(res) {
+      if(!res.isupvote) {
+        const deleteQ = 'delete from votes where vid = $1';
+        await pool.query(deleteQ, [res.vid]);
+        return response.status(200).json({ statusCode: 200, result: { isUpVote: false, isDownVote: false }})
+      } else {
+        const updateQ = 'update votes set isUpVote = $1 where vid = $2';
+        await pool.query(updateQ, [false, res.vid]);
+        return response.status(200).json({ statusCode: 200, result: { isUpVote: false, isDownVote: true }})
+      }
+    } else {
+      const insertQ = 'insert into votes (uid, pid, isUpVote) values ($1, $2, $3)';
+      await pool.query(insertQ, [uid, pid, false]);
+      return response.status(200).json({ statusCode: 200, result: { isUpVote: false, isDownVote: true  }})
+    }
+  } catch (error) {
+    return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
+  }
+};
+
+const toggleFlagPost = async (request, response) => {
+  const { uid, pid } = request.params;
+
+  try {
+    const query = 'select * from flags where uid = $1 and pid = $2';
+    const res = (await pool.query(query, [uid, pid])).rows[0];
+    if(res) {
+      const deleteQ = 'delete from flags where fid = $1';
+      await pool.query(deleteQ, [res.fid]);
+      return response.status(200).json({ statusCode: 200, result: { exists: false, banned: false }})
+    } else {
+      const insertQ = 'insert into flags (uid, pid) values ($1, $2)';
+      await pool.query(insertQ, [uid, pid]);
+
+      const [post, numFlags] = await Promise.all([
+        pool.query('select * from post where pid = $1', [pid]).then(r => r.rows[0]),
+        pool.query('select * from flags where pid = $1', [pid]).then(r => r.rows.length),
+      ]);
+        
+      if (numFlags >= 3) {
+        const authorID = post.uid;
+        const deleteUser = 'update users set deletedAt = now() WHERE uid = $1';
+        const deletePosts = 'update post set deletedAt = now() WHERE uid = $1';
+        const deleteComments = 'update comment set deletedAt = now() where uid = $1';
+  
+        await Promise.all([
+          pool.query(deleteUser, [authorID]),
+          pool.query(deletePosts, [authorID]),
+          pool.query(deleteComments, [authorID]),
+        ]);
+        return response.status(200).json({ statusCode: 200, result: { exists: true, banned: true } });
+      }
+
+      return response.status(200).json({ statusCode: 200, result: { exists: true, banned: false } });
     }
   } catch (error) {
     return response.status(500).json({ statusCode: 500, triggeredAt: 'pool.query()', error: error });
@@ -328,6 +381,6 @@ export default {
   initializer, authenticate,
   getUser, createUser, getOneUserByName,
   getChannels, createChannel,
-  getPostsForChannel, createPost, deleteOnePost, updatePostsUpvote, updatePostsDownvote, flagPost,
+  getPostsForChannel, createPost, deleteOnePost, togglePostsUpvote, togglePostsDownvote, toggleFlagPost,
   getCommentsForPost, createComment, deleteOneComment
 };

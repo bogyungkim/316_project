@@ -133,6 +133,8 @@ Response Body
 
 [GET] /posts/:channel_id
 
+> upVotes, downVotes, flags are a list of user IDs
+
 Response Body
 ```json
 [
@@ -143,45 +145,47 @@ Response Body
         "title": "title",
         "detail": "detail",
         "photourl": "http://www.naver.com",
-        "upvote": 0,
-        "downvote": 0,
+        "upVotes": [1, 2],
+        "downVotes": [3],
         "deletedat": null,
-        "flag": 0
+        "flags": [3, 5]
     }
 ]
 ```
 
-### Upvote a post
+### Toggle upvote on a post
 
-[POST] /posts/:post_id/upVote
+[POST] /posts/:post_id/upVote/:uid
 
 Response Body
 ```json
 {
-  "newUpVote": 2
+    "isUpVote": true,
+    "isDownVote": false
 }
 ```
 
-### Downvote a post
+### Toggle downvote on a post
 
 [POST] /posts/:post_id/downVote
 
 Response Body
 ```json
 {
-  "newDownVote": 1
+    "isUpVote": false,
+    "isDownVote": true
 }
 ```
 
-### Flag a post
+### Toggle flag on a post
 
-[POST] /posts/:post_id/flag
+[POST] /posts/:post_id/flag/:uid
 
 Response Body
 ```json
 {
-  "newFlag": 2,
-  "banned": false
+    "exists": true,
+    "banned": false
 }
 ```
 

@@ -28,6 +28,19 @@ CREATE TABLE post (
   flag INTEGER NOT NULL default 0
 );
 
+CREATE TABLE votes (
+  vid SERIAL PRIMARY KEY,
+  pid INTEGER NOT NULL REFERENCES post(pid),
+  uid INTEGER NOT NULL REFERENCES users(uid),
+  isUpVote BOOLEAN NOT NULL
+)
+
+CREATE TABLE flags (
+  fid SERIAL PRIMARY KEY,
+  pid INTEGER NOT NULL REFERENCES post(pid),
+  uid INTEGER NOT NULL REFERENCES users(uid)
+)
+
 CREATE TABLE comment (
   cid SERIAL PRIMARY KEY,
   uid INTEGER NOT NULL REFERENCES users(uid),
