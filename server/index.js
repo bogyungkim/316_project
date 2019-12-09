@@ -12,9 +12,10 @@ const app = express();
 
 app.set('port', process.env.PORT || process.env.API_PORT);
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '5mb'}));
 app.use(
   bodyParser.urlencoded({
+    limit: '5mb',
     extended: true,
   })
 );

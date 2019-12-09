@@ -101,7 +101,7 @@ Response Body
     {
         "chid": 2,
         "cname": "code"
-    },
+    }
 ]
 ```
 
