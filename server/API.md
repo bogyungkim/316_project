@@ -167,7 +167,7 @@ Response Body
 
 ### Toggle downvote on a post
 
-[POST] /posts/:post_id/downVote
+[POST] /posts/:post_id/downVote/:uid
 
 Response Body
 ```json
