@@ -13,17 +13,25 @@
 Request Body
 ```json
 {
-    "username": "amykim",
-    "phoneNumber": "0000000000",
-    "password": "passpass",
-    "clout": 0
+    "statusCode": 200,
+    "result": {
+        "uid": 1,
+        "username": "amykim",
+        "phonenumber": "9195648686",
+        "password": "$2a$08$.KaI9igs3PgbH/.ZvJTY7uxH/3QysSnSVFSdRs2wEQAOxx.6OvHJu",
+        "clout": 0,
+        "deletedat": null
+    }
 }
 ```
 
 Response body
 ```json
 {
-    "uid": 6
+    "statusCode": 200,
+    "result": {
+        "uid": 1
+    }
 }
 ```
 
@@ -35,19 +43,22 @@ Request Body
 ```json
 {
 	"id": "amykim",
-	"password": "passpass"
+	"password": "iamamy"
 }
 ```
 
 Response Body
 ```json
 {
-    "uid": 1,
-    "username": "amykim",
-    "phonenumber": "0000000000",
-    "password": "$2a$08$G2Diodbt0XzSfN0MEgTO..ze.XbbtK59yyD6bSqSkhvgTfLpQSvTO",
-    "clout": 0,
-    "deletedat": "2019-12-08T04:31:36.487Z"
+    "statusCode": 200,
+    "result": {
+        "uid": 1,
+        "username": "amykim",
+        "phonenumber": "9195648686",
+        "password": "$2a$08$.KaI9igs3PgbH/.ZvJTY7uxH/3QysSnSVFSdRs2wEQAOxx.6OvHJu",
+        "clout": 0,
+        "deletedat": null
+    }
 }
 ```
 
@@ -58,12 +69,15 @@ Response Body
 Response Body
 ```json
 {
-    "uid": 1,
-    "username": "amykim",
-    "phonenumber": "0000000000",
-    "password": "$2a$08$G2Diodbt0XzSfN0MEgTO..ze.XbbtK59yyD6bSqSkhvgTfLpQSvTO",
-    "clout": 0,
-    "deletedat": "2019-12-08T04:31:36.487Z"
+    "statusCode": 200,
+    "result": {
+        "uid": 1,
+        "username": "amykim",
+        "phonenumber": "9195648686",
+        "password": "$2a$08$.KaI9igs3PgbH/.ZvJTY7uxH/3QysSnSVFSdRs2wEQAOxx.6OvHJu",
+        "clout": 0,
+        "deletedat": null
+    }
 }
 ```
 
@@ -76,14 +90,14 @@ Response Body
 Request Body
 ```json
 {
-	"cname": "food"
+	"cname": "transportation"
 }
 ```
 
 Response Body
 ```json
 {
-	"chid": 5
+    "chid": 4
 }
 ```
 
@@ -93,16 +107,27 @@ Response Body
 
 Response Body
 ```json
-[
-    {
-        "chid": 1,
-        "cname": "eat"
-    },
-    {
-        "chid": 2,
-        "cname": "code"
-    }
-]
+{
+    "statusCode": 200,
+    "result": [
+        {
+            "chid": 1,
+            "cname": "general"
+        },
+        {
+            "chid": 2,
+            "cname": "social"
+        },
+        {
+            "chid": 3,
+            "cname": "food"
+        },
+        {
+            "chid": 4,
+            "cname": "transportation"
+        }
+    ]
+}
 ```
 
 ## Post API
@@ -116,7 +141,7 @@ Request Body
 {
     "chid": 1,
     "uid": 1,
-    "title": "title",
+    "title": "post",
     "detail": "detail",
     "photoUrl": "http://www.naver.com"
 }
@@ -125,7 +150,10 @@ Request Body
 Response Body
 ```json
 {
-	"pid": 2
+    "statusCode": 200,
+    "result": {
+        "pid": 1
+    }
 }
 ```
 
@@ -137,20 +165,41 @@ Response Body
 
 Response Body
 ```json
-[
-    {
-        "pid": 4,
-        "chid": 1,
-        "uid": 1,
-        "title": "title",
-        "detail": "detail",
-        "photourl": "http://www.naver.com",
-        "upVotes": [1, 2],
-        "downVotes": [3],
-        "deletedat": null,
-        "flags": [3, 5]
-    }
-]
+{{
+    "statusCode": 200,
+    "results": [
+        {
+            "pid": 1,
+            "chid": 1,
+            "uid": 2,
+            "title": "hello",
+            "detail": "post1",
+            "photourl": "null",
+            "deletedat": null,
+            "upVotes": [],
+            "downVotes": [
+                2
+            ],
+            "flags": [
+                2
+            ]
+        },
+        {
+            "pid": 2,
+            "chid": 1,
+            "uid": 2,
+            "title": "hello2",
+            "detail": "post2",
+            "photourl": "null",
+            "deletedat": null,
+            "upVotes": [
+                2
+            ],
+            "downVotes": [],
+            "flags": []
+        }
+    ]
+}
 ```
 
 ### Toggle upvote on a post
@@ -160,8 +209,11 @@ Response Body
 Response Body
 ```json
 {
-    "isUpVote": true,
-    "isDownVote": false
+    "statusCode": 200,
+    "result": {
+        "isUpVote": true,
+        "isDownVote": false
+    }
 }
 ```
 
@@ -172,8 +224,11 @@ Response Body
 Response Body
 ```json
 {
-    "isUpVote": false,
-    "isDownVote": true
+    "statusCode": 200,
+    "result": {
+        "isUpVote": false,
+        "isDownVote": true
+    }
 }
 ```
 
@@ -184,8 +239,11 @@ Response Body
 Response Body
 ```json
 {
-    "exists": true,
-    "banned": false
+    "statusCode": 200,
+    "result": {
+        "exists": true,
+        "banned": false
+    }
 }
 ```
 
@@ -198,16 +256,22 @@ Response Body
 Request Body
 ```json
 {
-	"uid": 1,
-	"pid": 3,
-	"context":"yayyyyy"
+    "statusCode": 200,
+    "result": {
+        "uid": 1,
+        "pid": 3,
+        "context":"yayyyyy"
+    }
 }
 ```
 
 Response Body
 ```json
 {
-	"cid": 5
+    "statusCode": 200,
+    "result": {
+        "cid": 5
+    }
 }
 ```
 
@@ -217,22 +281,25 @@ Response Body
 
 Response Body
 ```json
-[
-    {
-        "cid": 2,
-        "uid": 1,
-        "pid": 4,
-        "context": "yayyyyy",
-        "deletedat": null
-    },
-    {
-        "cid": 3,
-        "uid": 1,
-        "pid": 4,
-        "context": "yoyyyyy",
-        "deletedat": null
-    }
-]
+{
+    "statusCode": 200,
+    "result": [
+        {
+            "cid": 2,
+            "uid": 1,
+            "pid": 4,
+            "context": "yayyyyy",
+            "deletedat": null
+        },
+        {
+            "cid": 3,
+            "uid": 1,
+            "pid": 4,
+            "context": "yoyyyyy",
+            "deletedat": null
+        }
+    ]
+}
 ```
 
 ### Upload files to S3
