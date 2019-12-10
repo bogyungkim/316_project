@@ -1,8 +1,10 @@
 import AWS from 'aws-sdk';
+import uuid from 'uuid/v4';
 
 const upload = async (request, response) => {
-  const { name, data } = request.body;
+  const { data } = request.body;
   const s3 = new AWS.S3();
+  const name = uuid();
   const params = {
     Bucket: process.env.S3_bucket,
     Key: `${name}.jpg`,
