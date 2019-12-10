@@ -22,10 +22,7 @@ CREATE TABLE post (
   title VARCHAR(50) NOT NULL,
   detail VARCHAR(150) NOT NULL,
   photoUrl VARCHAR(2000) NOT NULL,
-  upVote INTEGER NOT NULL default 0,
-  downVote INTEGER NOT NULL default 0,
-  deletedAt TIMESTAMP default NULL,
-  flag INTEGER NOT NULL default 0
+  deletedAt TIMESTAMP default NULL
 );
 
 CREATE TABLE votes (
