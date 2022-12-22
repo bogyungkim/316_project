@@ -42,7 +42,7 @@
     "babel-loader": "^8.0.6",
     "nodemon": "^1.19.4",
     "serverless-dotenv-plugin": "^2.1.1",
-    "serverless-offline": "^5.12.0",
+    "serverless-offline": "^12.0.3",
     "serverless-webpack": "^5.3.1",
     "webpack": "^4.41.2",
     "webpack-node-externals": "^1.7.2"
